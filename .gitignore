@@ -1,20 +1,66 @@
-# Rust
+# ── Rust ─────────────────────────────────────────────────────────────────────
 target/
+**/*.rs.bk
 *.lock.bak
+.cargo/
 
-# Next.js
+# ── Next.js / Node ───────────────────────────────────────────────────────────
 dashboard/.next/
+dashboard/out/
 dashboard/node_modules/
-dashboard/.env.local
+dashboard/npm-debug.log*
+dashboard/yarn-debug.log*
+dashboard/yarn-error.log*
 
-# Env files with secrets
+# ── Environment / secrets ─────────────────────────────────────────────────────
 .env
 .env.*
 !.env.example
+dashboard/.env.local
+dashboard/.env.*.local
 
-# macOS
+# ── macOS ─────────────────────────────────────────────────────────────────────
 .DS_Store
+.AppleDouble
+.LSOverride
+*.icloud
 
-# Logs
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+*~
+
+# ── Logs & runtime ────────────────────────────────────────────────────────────
 *.log
 nohup.out
+*.pid
+
+# ── Build artifacts ───────────────────────────────────────────────────────────
+dist/
+build/
+*.deb
+*.rpm
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+.venv/
+venv/
+
+# ── Solidity / Foundry ────────────────────────────────────────────────────────
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# ── Agent runtime data ────────────────────────────────────────────────────────
+/tmp/neuralmesh/
+agent_identity.json
