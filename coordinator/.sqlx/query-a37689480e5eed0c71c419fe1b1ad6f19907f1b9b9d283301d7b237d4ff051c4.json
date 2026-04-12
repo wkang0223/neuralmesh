@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE providers SET\n            trust_score  = GREATEST(0.0, LEAST(5.0, trust_score + $1)),\n            jobs_completed = jobs_completed + 1,\n            success_rate = (jobs_completed * success_rate + $2::float8) / (jobs_completed + 1),\n            state = 'available'\n        WHERE provider_id = $3\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a37689480e5eed0c71c419fe1b1ad6f19907f1b9b9d283301d7b237d4ff051c4"
+}

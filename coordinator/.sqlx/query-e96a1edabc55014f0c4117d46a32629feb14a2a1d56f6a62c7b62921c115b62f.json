@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE providers\n        SET state = 'offline', active_job_id = NULL\n        WHERE state IN ('available', 'leased')\n          AND last_seen < now() - INTERVAL '90 seconds'\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "e96a1edabc55014f0c4117d46a32629feb14a2a1d56f6a62c7b62921c115b62f"
+}

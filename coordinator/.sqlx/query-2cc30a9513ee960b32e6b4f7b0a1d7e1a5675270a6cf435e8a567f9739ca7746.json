@@ -1,0 +1,92 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT provider_id, chip_model, unified_memory_gb, gpu_cores,\n                   metal_version, installed_runtimes, max_job_ram_gb,\n                   floor_price_nmc_per_hour, region, trust_score,\n                   jobs_completed, success_rate\n            FROM providers\n            WHERE state = 'available'\n              AND max_job_ram_gb >= $1\n              AND ($2 = '' OR region = $2)\n              AND (floor_price_nmc_per_hour <= $3 OR $3 = 0)\n            ORDER BY floor_price_nmc_per_hour ASC\n            LIMIT $4 OFFSET $5\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "provider_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "chip_model",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "unified_memory_gb",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "gpu_cores",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "metal_version",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "installed_runtimes",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "max_job_ram_gb",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "floor_price_nmc_per_hour",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 8,
+        "name": "region",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "trust_score",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 10,
+        "name": "jobs_completed",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 11,
+        "name": "success_rate",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Float8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "2cc30a9513ee960b32e6b4f7b0a1d7e1a5675270a6cf435e8a567f9739ca7746"
+}

@@ -18,6 +18,8 @@ COPY agent/ agent/
 COPY ledger/ ledger/
 COPY cli/ cli/
 
+# sqlx offline mode — uses pre-generated .sqlx/ cache so no live DB needed at build time
+ENV SQLX_OFFLINE=true
 RUN cargo build --release -p neuralmesh-coordinator
 
 # Runtime stage — minimal image

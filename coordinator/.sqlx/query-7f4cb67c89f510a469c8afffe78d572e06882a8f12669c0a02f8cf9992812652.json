@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            COUNT(*) FILTER (WHERE state = 'running')  AS running_jobs,\n            COUNT(*) FILTER (WHERE state = 'complete') AS completed_jobs\n        FROM jobs\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "running_jobs",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "completed_jobs",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "7f4cb67c89f510a469c8afffe78d572e06882a8f12669c0a02f8cf9992812652"
+}

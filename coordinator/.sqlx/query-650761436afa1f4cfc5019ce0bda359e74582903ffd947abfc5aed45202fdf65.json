@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO providers (\n                provider_id, chip_model, unified_memory_gb, gpu_cores,\n                metal_version, serial_number, installed_runtimes,\n                max_job_ram_gb, bandwidth_mbps, region,\n                floor_price_nmc_per_hour, state, nm_version\n            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'offline', $12)\n            ON CONFLICT (provider_id) DO UPDATE SET\n                chip_model = EXCLUDED.chip_model,\n                unified_memory_gb = EXCLUDED.unified_memory_gb,\n                gpu_cores = EXCLUDED.gpu_cores,\n                installed_runtimes = EXCLUDED.installed_runtimes,\n                floor_price_nmc_per_hour = EXCLUDED.floor_price_nmc_per_hour,\n                state = 'offline',\n                updated_at = now()\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int4",
+        "Int4",
+        "Text",
+        "Text",
+        "TextArray",
+        "Int4",
+        "Int4",
+        "Text",
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "650761436afa1f4cfc5019ce0bda359e74582903ffd947abfc5aed45202fdf65"
+}

@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE providers\n            SET state = $1, gpu_util_pct = $2, ram_used_gb = $3,\n                active_job_id = NULLIF($4, ''), last_seen = now()\n            WHERE provider_id = $5\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Float8",
+        "Int4",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "86e01fc0bfa7acca31f340421800e91c3f3e22f52ac87b5fed3dc4b773f71ac1"
+}

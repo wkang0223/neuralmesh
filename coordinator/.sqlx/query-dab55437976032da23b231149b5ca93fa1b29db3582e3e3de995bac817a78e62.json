@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT ecdsa_pubkey_hex, device_fingerprint_hash FROM accounts WHERE account_id = $1 AND active = TRUE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ecdsa_pubkey_hex",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "device_fingerprint_hash",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "dab55437976032da23b231149b5ca93fa1b29db3582e3e3de995bac817a78e62"
+}
