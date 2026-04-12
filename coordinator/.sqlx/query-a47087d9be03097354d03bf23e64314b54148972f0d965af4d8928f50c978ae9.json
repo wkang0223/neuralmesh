@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT escrow_id, consumer_id, locked_nmc FROM escrows WHERE job_id = $1 AND state = 'locked'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "escrow_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "consumer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "locked_nmc",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a47087d9be03097354d03bf23e64314b54148972f0d965af4d8928f50c978ae9"
+}

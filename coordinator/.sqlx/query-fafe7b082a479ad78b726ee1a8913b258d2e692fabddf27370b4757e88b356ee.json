@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO job_checkpoints\n            (checkpoint_id, job_id, provider_id, iteration,\n             checkpoint_dir, dmtcp_files, elapsed_secs)\n        VALUES ($1, $2, $3, $4, $5, $6, $7)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Text",
+        "TextArray",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fafe7b082a479ad78b726ee1a8913b258d2e692fabddf27370b4757e88b356ee"
+}

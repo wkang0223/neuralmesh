@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT state, checkpoint_url, restore_attempts\n        FROM jobs\n        WHERE job_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "checkpoint_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "restore_attempts",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "8a3cedc5f17b0b3936a3108b3ed90894df8221a0812073fcd882ae03e1a92226"
+}

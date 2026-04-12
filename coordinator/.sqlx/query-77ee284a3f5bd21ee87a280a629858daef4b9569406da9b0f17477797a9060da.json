@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT provider_id, active_job_id\n        FROM providers\n        WHERE state = 'leased'\n          AND last_seen < now() - ($1 || ' seconds')::INTERVAL\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "provider_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "active_job_id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "77ee284a3f5bd21ee87a280a629858daef4b9569406da9b0f17477797a9060da"
+}

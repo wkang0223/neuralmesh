@@ -4,6 +4,7 @@
 //! with the coordinator, accepts job assignments, and executes them in an
 //! isolated macOS sandbox.
 
+mod checkpoint;
 mod config;
 mod coordinator_client;
 mod heartbeat;

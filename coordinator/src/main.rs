@@ -88,6 +88,7 @@ async fn main() -> Result<()> {
         api::grpc::serve(state.clone(), cli.grpc_addr.clone()),
         api::rest::serve(state.clone(), cli.rest_addr.clone()),
         matching::run_auction_loop(db.clone(), nats),
+        matching::run_heartbeat_watcher(db.clone()),
     )?;
 
     Ok(())

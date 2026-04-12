@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE jobs\n        SET state           = 'complete',\n            output_hash     = $1,\n            actual_runtime_s = $2,\n            completed_at    = now()\n        WHERE job_id = $3\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1bac843985e934f99c91079bfd3ada4a01deb42efe478a06a7bada3c6b6fea4a"
+}

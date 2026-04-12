@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT job_id, runtime, min_ram_gb, max_price_per_hour,\n               preferred_region, consumer_ssh_pubkey, consumer_wg_pubkey,\n               bundle_url, bundle_hash\n        FROM jobs\n        WHERE state = 'queued'\n        ORDER BY created_at ASC\n        LIMIT 50\n        ",
+  "query": "\n        SELECT job_id, runtime, min_ram_gb, max_price_per_hour,\n               preferred_region, consumer_ssh_pubkey, consumer_wg_pubkey,\n               bundle_url, bundle_hash, checkpoint_url, restore_attempts\n        FROM jobs\n        WHERE state = 'queued'\n        ORDER BY created_at ASC\n        LIMIT 50\n        ",
   "describe": {
     "columns": [
       {
@@ -47,6 +47,16 @@
         "ordinal": 8,
         "name": "bundle_hash",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "checkpoint_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "restore_attempts",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
@@ -61,8 +71,10 @@
       true,
       true,
       true,
+      true,
+      true,
       true
     ]
   },
-  "hash": "9f66901efc1ea77d9fdd121f8cf83bae7e7fbc4fb1149aacf6f72fedf89491af"
+  "hash": "9b1d9d64480faa5612d9a9e1b9e103be2fb0dafcbb35d70de0b3234d41949c84"
 }

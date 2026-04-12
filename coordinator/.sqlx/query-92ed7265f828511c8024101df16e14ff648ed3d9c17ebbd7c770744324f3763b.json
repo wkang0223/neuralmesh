@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO deposit_records (stripe_session_id, account_id, amount_myr) VALUES ($1, $2, $3::double precision)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Float8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "92ed7265f828511c8024101df16e14ff648ed3d9c17ebbd7c770744324f3763b"
+}

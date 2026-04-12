@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE providers\n               SET trust_score = GREATEST(0.0, LEAST(5.0, trust_score - 0.20))\n               WHERE provider_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e928f80a1074fe747b8f6eea083d398e956472a19c50d296bd8bdbe48091745b"
+}

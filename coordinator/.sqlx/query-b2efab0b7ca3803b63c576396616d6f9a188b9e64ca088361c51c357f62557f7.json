@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs\n               SET state = 'failed',\n                   completed_at = now(),\n                   failure_reason = $1\n               WHERE job_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b2efab0b7ca3803b63c576396616d6f9a188b9e64ca088361c51c357f62557f7"
+}

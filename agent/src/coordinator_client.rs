@@ -20,6 +20,8 @@ pub struct CoordinatorClient {
     /// Active gRPC channel (connected to one coordinator)
     channel: Channel,
     provider_id: String,
+    /// gRPC endpoint string e.g. "http://localhost:9090"
+    endpoint_str: String,
 }
 
 impl CoordinatorClient {
@@ -45,11 +47,23 @@ impl CoordinatorClient {
             .with_context(|| format!("Connecting to {}", endpoint_str))?;
 
         info!(endpoint = endpoint_str, "Connected to coordinator");
-        Ok(Self { channel, provider_id: String::new() })
+        Ok(Self { channel, provider_id: String::new(), endpoint_str: endpoint_str.to_string() })
     }
 
     fn client(&self) -> AgentServiceClient<Channel> {
         AgentServiceClient::new(self.channel.clone())
+    }
+
+    /// Provider ID assigned after registration.
+    pub fn provider_id(&self) -> &str {
+        &self.provider_id
+    }
+
+    /// Derive REST base URL from gRPC endpoint (swap port 9090 → 8080).
+    pub fn rest_base(&self) -> String {
+        self.endpoint_str
+            .replace(":9090", ":8080")
+            .replace("localhost:9090", "localhost:8080")
     }
 
     /// Register this provider with the coordinator.

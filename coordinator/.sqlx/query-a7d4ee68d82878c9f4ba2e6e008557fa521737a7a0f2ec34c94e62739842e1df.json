@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT job_id, consumer_id, runtime, min_ram_gb, max_duration_s,\n               max_price_per_hour, bundle_hash, bundle_url,\n               consumer_ssh_pubkey, consumer_wg_pubkey, preferred_region\n        FROM jobs\n        WHERE provider_id = $1 AND state = 'assigned'\n        ORDER BY started_at ASC\n        LIMIT 1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "consumer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "runtime",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "min_ram_gb",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "max_duration_s",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "max_price_per_hour",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "bundle_hash",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "bundle_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "consumer_ssh_pubkey",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "consumer_wg_pubkey",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "preferred_region",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "a7d4ee68d82878c9f4ba2e6e008557fa521737a7a0f2ec34c94e62739842e1df"
+}

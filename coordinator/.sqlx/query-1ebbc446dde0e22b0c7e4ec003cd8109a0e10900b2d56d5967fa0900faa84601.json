@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE providers SET state = 'available', active_job_id = NULL,\n         jobs_completed = jobs_completed + 1 WHERE provider_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1ebbc446dde0e22b0c7e4ec003cd8109a0e10900b2d56d5967fa0900faa84601"
+}

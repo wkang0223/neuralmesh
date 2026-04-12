@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs\n               SET state = 'queued',\n                   provider_id = NULL,\n                   failure_reason = 'provider_disconnect_checkpoint_restore'\n               WHERE job_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "aa57d1d9ceda69035fbbd286a4ea43167e461de54d5bd9565051bc3b3db6b424"
+}

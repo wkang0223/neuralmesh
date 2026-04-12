@@ -36,10 +36,11 @@ prost = "0.13"
 prost-types = "0.13"
 
 # HTTP / REST
-axum = { version = "0.7", features = ["ws"] }
+axum = { version = "0.7", features = ["ws", "macros"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
 hyper = "1"
+reqwest = { version = "0.12", features = ["json"] }
 
 # P2P networking
 libp2p = { version = "0.56", features = [
@@ -100,6 +101,9 @@ time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
 # Config
 config = "0.14"
 dirs = "5"
+
+# System
+num_cpus = "1"
 
 # Hashing
 blake3 = "1"

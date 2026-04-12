@@ -33,3 +33,4 @@ tokio-stream = { workspace = true }
 blake3       = { workspace = true }
 sqlx         = { workspace = true }
 prost-types  = { workspace = true }
+reqwest      = { workspace = true }
