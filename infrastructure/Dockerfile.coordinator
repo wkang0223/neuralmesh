@@ -1,6 +1,9 @@
 # Build stage
 FROM rust:1.86-slim-bookworm AS builder
 
+# Cache bust: force re-pull of rust image (bumped from 1.78 → 1.86)
+ARG CACHE_BUST=rust186
+
 RUN apt-get update && apt-get install -y \
     protobuf-compiler \
     pkg-config \

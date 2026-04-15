@@ -1,6 +1,8 @@
 # Build stage
 FROM rust:1.86-slim-bookworm AS builder
 
+ARG CACHE_BUST=rust186
+
 RUN apt-get update && apt-get install -y \
     protobuf-compiler \
     pkg-config \
