@@ -1,8 +1,5 @@
 # Build stage
-FROM rust:1.86-slim-bookworm AS builder
-
-# Cache bust: force re-pull of rust image (bumped from 1.78 → 1.86)
-ARG CACHE_BUST=rust186
+FROM rust:1.86-slim-bookworm@sha256:57d415bbd61ce11e2d5f73de068103c7bd9f3188dc132c97cef4a8f62989e944 AS builder
 
 RUN apt-get update && apt-get install -y \
     protobuf-compiler \
@@ -20,6 +17,7 @@ COPY coordinator/ coordinator/
 COPY agent/ agent/
 COPY ledger/ ledger/
 COPY cli/ cli/
+COPY .sqlx/ .sqlx/
 
 # sqlx offline mode — uses pre-generated .sqlx/ cache so no live DB needed at build time
 ENV SQLX_OFFLINE=true
