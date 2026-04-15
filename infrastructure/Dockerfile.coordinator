@@ -1,7 +1,7 @@
-# Build stage
+# Build stage — rust:1.86 (requires Cargo edition2024 support)
 FROM rust:1.86-slim-bookworm@sha256:57d415bbd61ce11e2d5f73de068103c7bd9f3188dc132c97cef4a8f62989e944 AS builder
 
-RUN apt-get update && apt-get install -y \
+RUN rustup show && apt-get update && apt-get install -y \
     protobuf-compiler \
     pkg-config \
     libssl-dev \
@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /build
 
-# Cache dependencies by copying manifests first
 COPY Cargo.toml Cargo.lock ./
 COPY crates/ crates/
 COPY proto/ proto/
@@ -19,11 +18,10 @@ COPY ledger/ ledger/
 COPY cli/ cli/
 COPY .sqlx/ .sqlx/
 
-# sqlx offline mode — uses pre-generated .sqlx/ cache so no live DB needed at build time
 ENV SQLX_OFFLINE=true
 RUN cargo build --release -p neuralmesh-coordinator
 
-# Runtime stage — minimal image
+# Runtime stage
 FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y \
