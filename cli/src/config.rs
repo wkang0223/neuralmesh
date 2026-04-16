@@ -1,8 +1,8 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-const DEFAULT_COORDINATOR: &str = "https://neuralmesh-coordinator-production-666f.up.railway.app";
-const DEFAULT_LEDGER: &str      = "https://neuralmesh-ledger-production-9e83.up.railway.app";
+const DEFAULT_COORDINATOR: &str = "https://hatch-coordinator-production.up.railway.app";
+const DEFAULT_LEDGER: &str      = "https://hatch-ledger-production.up.railway.app";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CliConfig {

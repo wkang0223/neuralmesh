@@ -2,7 +2,7 @@
 # Hatch Provider Installer for macOS (Apple Silicon)
 #
 # Usage (one-liner):
-#   curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/wkang0223/hatch/master/scripts/install-agent-macos.sh | bash
 #
 # Or run directly:
 #   chmod +x install-agent-macos.sh && ./install-agent-macos.sh
@@ -27,7 +27,7 @@ NM_LOG_DIR="/var/log/hatch"
 NM_CONFIG_DIR="$HOME/Library/Application Support/hatch"
 NM_TMP_DIR="/tmp/hatch"
 NM_GITHUB_ORG="wkang0223"
-NM_GITHUB_REPO="neuralmesh"
+NM_GITHUB_REPO="hatch"
 RELEASE_BASE="https://github.com/${NM_GITHUB_ORG}/${NM_GITHUB_REPO}/releases"
 
 # Colors
@@ -260,8 +260,8 @@ if [[ ! -f "$CLI_CONFIG" ]]; then
     # Generate a random account ID (will be replaced with proper registration)
     ACCOUNT_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
     cat > "$CLI_CONFIG" <<EOF
-coordinator_url = "https://neuralmesh-coordinator-production-666f.up.railway.app"
-ledger_url      = "https://neuralmesh-ledger-production-9e83.up.railway.app"
+coordinator_url = "https://hatch-coordinator-production.up.railway.app"
+ledger_url      = "https://hatch-ledger-production.up.railway.app"
 account_id      = "$ACCOUNT_ID"
 EOF
     success "Account ID: $ACCOUNT_ID"
