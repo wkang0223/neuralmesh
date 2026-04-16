@@ -25,9 +25,9 @@ struct Cli {
     /// Optional — if unset, in-memory job queue is used
     #[arg(long, env = "NM_NATS_URL")]
     nats_url: Option<String>,
-    #[arg(long, default_value = "0.0.0.0:9090")]
+    #[arg(long, env = "GRPC_ADDR", default_value = "0.0.0.0:9090")]
     grpc_addr: String,
-    #[arg(long, default_value = "0.0.0.0:8080")]
+    #[arg(long, env = "REST_ADDR", default_value = "0.0.0.0:8080")]
     rest_addr: String,
     #[arg(long, default_value = "info")]
     log_level: String,

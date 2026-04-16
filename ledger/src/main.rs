@@ -36,7 +36,7 @@ use tracing::{info, warn};
 struct Cli {
     #[arg(long, env = "NM_DATABASE_URL")]
     database_url: Option<String>,
-    #[arg(long, default_value = "0.0.0.0:8082")]
+    #[arg(long, env = "REST_ADDR", default_value = "0.0.0.0:8082")]
     listen_addr: String,
     #[arg(long, default_value = "info")]
     log_level: String,
