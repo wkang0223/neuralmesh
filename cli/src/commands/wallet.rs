@@ -66,9 +66,11 @@ struct WithdrawResponse {
 
 #[derive(Debug, Deserialize)]
 struct Transaction {
-    id: String,
+    tx_id: String,
+    #[serde(rename = "tx_type")]
     kind: String,
     amount_nmc: f64,
+    #[serde(default)]
     balance_after: f64,
     description: String,
     created_at: String,
@@ -77,13 +79,13 @@ struct Transaction {
 #[derive(Debug, Deserialize)]
 struct TransactionListResponse {
     transactions: Vec<Transaction>,
+    #[serde(default)]
     total: u32,
 }
 
 #[derive(Debug, Serialize)]
 struct WithdrawRequest {
-    account_id: String,
-    destination_address: String,
+    dest_address: String,
     amount_nmc: f64,
 }
 
@@ -103,7 +105,7 @@ async fn show_balance(ctx: &ClientContext) -> Result<()> {
 
     let resp = ctx
         .http()
-        .get(ctx.ledger_url(&format!("/api/v1/balance/{}", account_id)))
+        .get(ctx.ledger_url(&format!("/api/v1/wallet/{}/balance", account_id)))
         .send()
         .await
         .context("Failed to fetch balance")?;
@@ -156,11 +158,10 @@ async fn deposit(ctx: &ClientContext, amount: f64, method: &str) -> Result<()> {
 
     let resp = ctx
         .http()
-        .post(ctx.ledger_url("/api/v1/deposit"))
+        .post(ctx.ledger_url(&format!("/api/v1/wallet/{}/deposit", account_id)))
         .json(&serde_json::json!({
-            "account_id": account_id,
             "amount_nmc": amount,
-            "method": method,
+            "reference":  method,
         }))
         .send()
         .await
@@ -225,14 +226,13 @@ async fn withdraw(ctx: &ClientContext, address: &str, amount: f64) -> Result<()>
     println!("Withdrawing {} NMC to {}...", format!("{:.4}", amount).green(), address.yellow());
 
     let req = WithdrawRequest {
-        account_id,
-        destination_address: address.to_string(),
+        dest_address: address.to_string(),
         amount_nmc: amount,
     };
 
     let resp = ctx
         .http()
-        .post(ctx.ledger_url("/api/v1/withdraw"))
+        .post(ctx.ledger_url(&format!("/api/v1/wallet/{}/withdraw", account_id)))
         .json(&req)
         .send()
         .await
@@ -272,7 +272,7 @@ async fn show_history(ctx: &ClientContext, limit: u32, kind: Option<String>) -> 
         params.push(format!("kind={}", k));
     }
 
-    let url = ctx.ledger_url(&format!("/api/v1/transactions?{}", params.join("&")));
+    let url = ctx.ledger_url(&format!("/api/v1/wallet/{}/transactions?{}", account_id, params.join("&")));
 
     let resp = ctx
         .http()
@@ -296,7 +296,7 @@ async fn show_history(ctx: &ClientContext, limit: u32, kind: Option<String>) -> 
     if ctx.output_json {
         println!("{}", serde_json::to_string_pretty(&serde_json::json!({
             "transactions": result.transactions.iter().map(|t| serde_json::json!({
-                "id": t.id,
+                "tx_id": t.tx_id,
                 "kind": t.kind,
                 "amount_nmc": t.amount_nmc,
                 "balance_after": t.balance_after,
