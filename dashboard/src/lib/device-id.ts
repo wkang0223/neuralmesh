@@ -1,5 +1,5 @@
 /**
- * device-id.ts — Device-locked account identity for NeuralMesh
+ * device-id.ts — Device-locked account identity for Hatch
  *
  * How it works:
  *   1. Generate an ECDSA P-256 keypair via Web Crypto API (hardware-backed on
@@ -18,7 +18,7 @@
  *     the macOS IOPlatformUUID / Linux machine-id for a hard hardware lock
  */
 
-const DB_NAME = "neuralmesh-identity";
+const DB_NAME = "hatch-identity";
 const DB_VERSION = 1;
 const STORE_NAME = "identity";
 const IDENTITY_KEY = "primary";
@@ -213,7 +213,7 @@ export async function createIdentity(
     }),
   }).catch(() => {
     // Registration failure is non-fatal; will retry on next verification
-    console.warn("NeuralMesh: account registration request failed (coordinator may be offline)");
+    console.warn("Hatch: account registration request failed (coordinator may be offline)");
   });
 
   await idbSet(IDENTITY_KEY, identity);
@@ -328,7 +328,7 @@ export async function reRegisterDevice(
         platform:                identity.platform,
       }),
     }).catch(() => {
-      console.warn("NeuralMesh: fallback re-register failed (coordinator may be offline)");
+      console.warn("Hatch: fallback re-register failed (coordinator may be offline)");
     });
   }
 

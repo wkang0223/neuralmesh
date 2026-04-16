@@ -211,7 +211,7 @@ function ProviderCard({ provider: p }: { provider: Provider }) {
           <div className="text-lg font-bold text-green-400 font-mono">
             ${p.floor_price_nmc_per_hour.toFixed(2)}
           </div>
-          <div className="text-xs text-slate-500">NMC/hr</div>
+          <div className="text-xs text-slate-500">HC/hr</div>
         </div>
       </div>
 

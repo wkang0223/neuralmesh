@@ -1566,6 +1566,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "hatch-agent"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "blake3",
+ "clap",
+ "dirs",
+ "hex",
+ "nm-common",
+ "nm-crypto",
+ "nm-macos",
+ "nm-proto",
+ "nm-wireguard",
+ "prost-types",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sqlx",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-stream",
+ "toml",
+ "tonic",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2870,36 +2900,6 @@ dependencies = [
  "libc",
  "log",
  "tokio",
-]
-
-[[package]]
-name = "neuralmesh-agent"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "blake3",
- "clap",
- "dirs",
- "hex",
- "nm-common",
- "nm-crypto",
- "nm-macos",
- "nm-proto",
- "nm-wireguard",
- "prost-types",
- "reqwest",
- "serde",
- "serde_json",
- "sha2",
- "sqlx",
- "thiserror 2.0.18",
- "tokio",
- "tokio-stream",
- "toml",
- "tonic",
- "tracing",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]

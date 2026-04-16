@@ -1,5 +1,5 @@
 /**
- * NeuralMesh — wagmi 2 + viem configuration.
+ * Hatch — wagmi 2 + viem configuration.
  *
  * Supports:
  *   • Arbitrum Sepolia (testnet, chain id 421614) — default for dev
@@ -8,7 +8,7 @@
  * Connectors:
  *   • injected() — MetaMask, Rabby, Frame, etc.
  *
- * ABI fragments for NMCToken (ERC-20) and Registry (staking).
+ * ABI fragments for HCToken (ERC-20) and Registry (staking).
  */
 
 import { createConfig, http }    from "wagmi";
@@ -72,7 +72,7 @@ export const hasContracts = CONTRACT_ADDRESSES.nmc.startsWith("0x");
 
 // ── ABI fragments ─────────────────────────────────────────────────────────────
 
-/** NMCToken — ERC-20 balance + allowance reads */
+/** HCToken — ERC-20 balance + allowance reads */
 export const NMC_ABI = [
   {
     name:    "balanceOf",
@@ -169,7 +169,7 @@ export const PROVIDER_NFT_ABI = [
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
-/** Convert NMC wei (18 decimals) to a human-readable float. */
+/** Convert HC wei (18 decimals) to a human-readable float. */
 export function formatNmc(wei: bigint): string {
   const divisor = 10n ** 18n;
   const whole   = wei / divisor;

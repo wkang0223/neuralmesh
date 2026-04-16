@@ -4,7 +4,7 @@ import { getStripe, MIN_DEPOSIT_NMC } from "@/lib/stripe";
 // POST /api/stripe/checkout
 // Creates a Stripe Checkout session. Money goes to operator's Stripe account
 // and auto-pays out to the connected bank account (T+2 business days).
-// On success, Stripe fires the checkout.session.completed webhook which credits NMC.
+// On success, Stripe fires the checkout.session.completed webhook which credits HC.
 export async function POST(req: NextRequest) {
   try {
     const { account_id, amount_nmc, country } = await req.json();
@@ -14,12 +14,12 @@ export async function POST(req: NextRequest) {
     }
     if (!amount_nmc || amount_nmc < MIN_DEPOSIT_NMC) {
       return NextResponse.json(
-        { error: `Minimum deposit is ${MIN_DEPOSIT_NMC} NMC` },
+        { error: `Minimum deposit is ${MIN_DEPOSIT_NMC} HC` },
         { status: 400 }
       );
     }
 
-    // Amount in sen (MYR cents). 1 NMC = RM 1.00 = 100 sen.
+    // Amount in sen (MYR cents). 1 HC = RM 1.00 = 100 sen.
     const amount_sen = Math.round(amount_nmc * 100);
 
     // Payment methods: FPX is the primary Malaysian internet banking method.
@@ -36,10 +36,10 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: "myr",
             product_data: {
-              name: "NeuralMesh Compute Credits (NMC)",
+              name: "Hatch Credits (HC)",
               description:
-                `${amount_nmc} NMC — non-transferable compute credit voucher. ` +
-                "Redeemable exclusively for GPU compute time on NeuralMesh. " +
+                `${amount_nmc} HC — non-transferable compute credit voucher. ` +
+                "Redeemable exclusively for GPU compute time on Hatch. " +
                 "Not a financial instrument or investment product.",
             },
             unit_amount: amount_sen,

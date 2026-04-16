@@ -15,8 +15,8 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-// NMC pricing constants
-// 1 NMC = RM 1.00 for Malaysian users (Stripe MY)
+// HC pricing constants
+// 1 HC = RM 1.00 for Malaysian users (Stripe MY)
 export const NMC_PRICE_MYR = 1.00;
 export const MIN_DEPOSIT_NMC = 10;        // Minimum RM 10
 export const ANNUAL_LIMIT_MYR_L1 = 5_000;   // BNM: RM 5,000/year for self-declared KYC

@@ -147,8 +147,8 @@ export default function ProviderPage() {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="nmcGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#00b3e6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#00b3e6" stopOpacity={0}   />
+                      <stop offset="5%"  stopColor="#ffe566" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#ffe566" stopOpacity={0}   />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="day" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -157,9 +157,9 @@ export default function ProviderPage() {
                   <Tooltip
                     contentStyle={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
                     labelStyle={{ color: "#94a3b8" }}
-                    formatter={(v: number) => [`${v.toFixed(4)} NMC`, "Earned"]}
+                    formatter={(v: number) => [`${v.toFixed(4)} HC`, "Earned"]}
                   />
-                  <Area type="monotone" dataKey="nmc" stroke="#00b3e6" strokeWidth={2} fill="url(#nmcGrad)" />
+                  <Area type="monotone" dataKey="nmc" stroke="#ffe566" strokeWidth={2} fill="url(#nmcGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -171,12 +171,12 @@ export default function ProviderPage() {
           <div className="glass rounded-xl p-6 mb-8 glow-border">
             <h2 className="text-lg font-semibold text-white mb-4">Set up your provider</h2>
             <p className="text-slate-400 text-sm mb-6">
-              Run the installer on your Mac Mini or Mac Studio to start earning NMC.
+              Run the installer on your Mac Mini or Mac Studio to start earning HC.
             </p>
             <div className="space-y-3">
               {[
-                { label: "One-line install", cmd: "curl -fsSL https://install.neuralmesh.io | bash" },
-                { label: "Or via Homebrew",  cmd: "brew install neuralmesh-io/tap/nm && nm provider install" },
+                { label: "One-line install", cmd: "curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash" },
+                { label: "Or via Homebrew",  cmd: "brew install hatch/tap/nm && nm provider install" },
                 { label: "Start agent",      cmd: "nm provider start" },
               ].map((s) => (
                 <div key={s.cmd} className="flex items-center gap-3 bg-slate-900 rounded-lg px-4 py-3 border border-slate-800">

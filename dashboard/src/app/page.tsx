@@ -43,19 +43,19 @@ const FEATURES = [
   },
   {
     icon: TrendingUp,
-    title: "NMC Credit System",
-    body: "Off-chain NMC credits for Phase 1. On-chain Arbitrum L2 token for trustless settlement in Phase 3 — no gas fees in the interim.",
+    title: "HC Credit System",
+    body: "Off-chain HC credits for Phase 1. On-chain Arbitrum L2 token for trustless settlement in Phase 3 — no gas fees in the interim.",
   },
 ];
 
 const STEPS_PROVIDER = [
-  { step: "1", cmd: "curl -fsSL https://install.neuralmesh.io | bash", label: "Install agent" },
+  { step: "1", cmd: "curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash", label: "Install agent" },
   { step: "2", cmd: "nm provider config --idle-minutes 10 --floor-price 0.05", label: "Set your price" },
   { step: "3", cmd: "nm provider start", label: "Start earning" },
 ];
 
 const STEPS_CONSUMER = [
-  { step: "1", cmd: "brew install neuralmesh-io/tap/nm", label: "Install CLI" },
+  { step: "1", cmd: "brew install hatch/tap/nm", label: "Install CLI" },
   { step: "2", cmd: "nm gpu list --min-ram 48 --runtime mlx", label: "Browse GPUs" },
   { step: "3", cmd: "nm job submit --runtime mlx --ram 48 ./inference.py", label: "Run your job" },
 ];
@@ -74,7 +74,7 @@ export default function LandingPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(0,180,255,0.18), transparent 70%)",
+              "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(255,229,102,0.15), transparent 70%)",
           }}
         />
 
@@ -97,7 +97,7 @@ export default function LandingPage() {
             A decentralized marketplace for Apple M-series unified memory compute.
             Run Llama 3 70B on a Mac Mini M4 Pro for{" "}
             <span className="text-white font-semibold">$0.07/hr</span>.{" "}
-            Earn NMC credits while your Mac sleeps.
+            Earn HC credits while your Mac sleeps.
           </p>
 
           <p className="text-sm text-slate-500 max-w-xl mx-auto mb-10">
@@ -294,9 +294,9 @@ export default function LandingPage() {
                 <span className="text-sm font-medium text-white">Python SDK</span>
                 <span className="ml-auto text-xs text-slate-500 font-mono">pip</span>
               </div>
-              <pre className="terminal text-xs leading-relaxed">{`pip install neuralmesh
+              <pre className="terminal text-xs leading-relaxed">{`pip install hatch
 
-import neuralmesh as nm
+import hatch as nm
 
 nm.configure(account_id="your-id")
 
@@ -318,7 +318,7 @@ for line in job.stream_logs():
                 <span className="ml-auto text-xs text-slate-500 font-mono">brew</span>
               </div>
               <pre className="terminal text-xs leading-relaxed">{`# Install
-brew install neuralmesh-io/tap/nm
+brew install hatch/tap/nm
 
 # Browse available Macs
 nm gpu list --min-ram 48 --runtime mlx
@@ -343,7 +343,7 @@ nm job logs <job-id> --follow`}</pre>
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold text-white mb-2">How Credits &amp; Payments Work</h2>
             <p className="text-slate-400 text-sm max-w-xl mx-auto">
-              Transparent, real-time accounting. Every NMC is tracked — no hidden fees, no surprises.
+              Transparent, real-time accounting. Every HC is tracked — no hidden fees, no surprises.
             </p>
           </div>
 
@@ -352,8 +352,8 @@ nm job logs <job-id> --follow`}</pre>
             {[
               {
                 icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/20",
-                step: "1", label: "Deposit", sub: "$1 = 1 NMC",
-                body: "Pay via Stripe or wire NMC from Solana / Arbitrum. Credits appear instantly.",
+                step: "1", label: "Deposit", sub: "$1 = 1 HC",
+                body: "Pay via Stripe or wire HC from Solana / Arbitrum. Credits appear instantly.",
               },
               { arrow: true },
               {
@@ -400,7 +400,7 @@ nm job logs <job-id> --follow`}</pre>
           {/* Money split diagram */}
           <div className="glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
             <div className="text-center text-sm font-semibold text-white mb-6">
-              Example: 4-hour job at 0.10 NMC/hr = <span className="text-brand-400">0.40 NMC total</span>
+              Example: 4-hour job at 0.10 HC/hr = <span className="text-brand-400">0.40 HC total</span>
             </div>
 
             {/* Bar */}
@@ -411,12 +411,12 @@ nm job logs <job-id> --follow`}</pre>
             <div className="flex justify-between text-xs mb-6">
               <div className="flex items-center gap-1.5">
                 <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
-                <span className="text-green-400 font-mono font-semibold">0.368 NMC</span>
+                <span className="text-green-400 font-mono font-semibold">0.368 HC</span>
                 <span className="text-slate-500">provider (92%)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="h-2.5 w-2.5 rounded-full bg-slate-500" />
-                <span className="text-slate-400 font-mono font-semibold">0.032 NMC</span>
+                <span className="text-slate-400 font-mono font-semibold">0.032 HC</span>
                 <span className="text-slate-500">platform (8%)</span>
               </div>
             </div>
@@ -425,7 +425,7 @@ nm job logs <job-id> --follow`}</pre>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 text-xs text-slate-400">
               <ShieldCheck className="h-4 w-4 text-yellow-400 flex-shrink-0" />
               If the job finishes early (e.g. 2 hrs instead of 4), you only pay for 2 hrs.
-              The remaining 0.20 NMC is automatically refunded from escrow.
+              The remaining 0.20 HC is automatically refunded from escrow.
             </div>
           </div>
 
@@ -433,7 +433,7 @@ nm job logs <job-id> --follow`}</pre>
           <div className="mt-8 flex flex-wrap justify-center gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-brand-400" />
-              <strong className="text-slate-400">Phase 1 (now):</strong> Off-chain NMC ledger (PostgreSQL)
+              <strong className="text-slate-400">Phase 1 (now):</strong> Off-chain HC ledger (PostgreSQL)
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-violet-400" />
@@ -456,18 +456,18 @@ nm job logs <job-id> --follow`}</pre>
             <div className="space-y-6 pl-10">
               {[
                 { phase: "Phase 1", label: "Apple Silicon MVP", active: true,
-                  items: ["Mac Mini M4 / Mac Studio providers", "MLX · PyTorch MPS · ONNX CoreML", "Off-chain NMC credits", "macOS sandbox isolation"] },
+                  items: ["Mac Mini M4 / Mac Studio providers", "MLX · PyTorch MPS · ONNX CoreML", "Off-chain HC credits", "macOS sandbox isolation"] },
                 { phase: "Phase 2", label: "Hardening + Migration", active: false,
                   items: ["DMTCP job checkpointing + migration", "macOS Virtualization.framework", "Reputation system", "Next.js dashboard v1"] },
                 { phase: "Phase 3", label: "On-chain Token", active: false,
-                  items: ["NMC ERC-20 on Arbitrum L2", "Trustless escrow smart contracts", "ZK Groth16 compute proofs", "Provider staking"] },
+                  items: ["HC ERC-20 on Arbitrum L2", "Trustless escrow smart contracts", "ZK Groth16 compute proofs", "Provider staking"] },
                 { phase: "Phase 4", label: "NVIDIA + AMD + Intel Arc", active: false,
                   items: ["Linux agent (nvml · rocm_smi · Level Zero)", "Docker + NVIDIA Container Toolkit", "Firecracker MicroVMs", "Apache TVM cross-platform compiler"] },
               ].map((phase) => (
                 <div key={phase.phase} className="relative">
                   <div className={`absolute -left-6 h-3 w-3 rounded-full border-2 ${
                     phase.active
-                      ? "bg-brand-400 border-brand-400 shadow-[0_0_8px_rgba(0,204,255,0.6)]"
+                      ? "bg-brand-400 border-brand-400 shadow-[0_0_8px_rgba(255,229,102,0.6)]"
                       : "bg-slate-800 border-slate-600"
                   }`} />
                   <div className={`glass rounded-xl p-4 ${phase.active ? "glow-border" : ""}`}>
@@ -505,15 +505,15 @@ nm job logs <job-id> --follow`}</pre>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-slate-500 text-sm">
             <Cpu className="h-4 w-4 text-brand-400" />
-            <span>NeuralMesh · Apache 2.0</span>
+            <span>Hatch · Apache 2.0</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-slate-500">
             <Link href="/market" className="hover:text-white transition-colors">Market</Link>
             <Link href="/provider" className="hover:text-white transition-colors">Provider</Link>
-            <a href="https://github.com/neuralmesh-io/neuralmesh" className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
+            <a href="https://github.com/wkang0223/neuralmesh" className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
               GitHub
             </a>
-            <a href="https://docs.neuralmesh.io" className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
+            <a href="https://docs.hatch.dev" className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
               Docs
             </a>
           </div>

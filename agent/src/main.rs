@@ -22,8 +22,8 @@ use tracing::{error, info};
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "neuralmesh-agent",
-    about = "NeuralMesh provider daemon — leases idle Apple Silicon GPU to the network",
+    name = "hatch-agent",
+    about = "Hatch provider daemon — leases idle Apple Silicon GPU to the network",
     version
 )]
 struct Cli {

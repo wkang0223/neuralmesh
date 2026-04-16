@@ -1,5 +1,5 @@
-// NeuralMesh REST API client for the dashboard.
-// All endpoints are served by neuralmesh-coordinator on port 8080.
+// Hatch REST API client for the dashboard.
+// All endpoints are served by the hatch coordinator on port 8080.
 // (Phase 1: ledger/balance consolidated on coordinator; no separate ledger service.)
 
 const COORDINATOR =

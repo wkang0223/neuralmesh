@@ -8,11 +8,11 @@ import { api } from "@/lib/api-client";
 
 // BNM-mandated terms the user must acknowledge
 const TERMS = [
-  "NMC (NeuralMesh Compute Credit) is a non-transferable utility voucher redeemable exclusively for GPU compute time on the NeuralMesh platform.",
-  "NMC is NOT a financial instrument, investment product, e-money, digital currency, or security as defined under Malaysian law.",
-  "NMC credits have no monetary value outside the NeuralMesh platform and cannot be sold, traded, or exchanged between users.",
+  "HC (Hatch Credit) is a non-transferable utility voucher redeemable exclusively for GPU compute time on the Hatch platform.",
+  "HC is NOT a financial instrument, investment product, e-money, digital currency, or security as defined under Malaysian law.",
+  "HC credits have no monetary value outside the Hatch platform and cannot be sold, traded, or exchanged between users.",
   "The value of GPU compute credits may change as pricing evolves. This is a pricing change, not an investment return.",
-  "NeuralMesh is not a bank, e-money issuer, or licensed financial institution. Compute credits are prepaid service vouchers.",
+  "Hatch is not a bank, e-money issuer, or licensed financial institution. Compute credits are prepaid service vouchers.",
   "I understand the annual deposit limits applicable to my verification level and consent to AML transaction monitoring.",
   "I confirm that the identity information I provide is accurate and I consent to it being held for 7 years per AMLA 2001 s.22.",
 ];
@@ -313,8 +313,8 @@ export default function CompliancePage() {
               <p>KYC Level 1 approved. Annual deposit limit: <span className="text-white font-semibold">RM 5,000</span></p>
               <p className="text-xs text-slate-500 mt-2">
                 To increase your limit to RM 50,000, email{" "}
-                <a href="mailto:compliance@neuralmesh.io" className="text-brand-400">
-                  compliance@neuralmesh.io
+                <a href="mailto:compliance@hatch.dev" className="text-brand-400">
+                  compliance@hatch.dev
                 </a>{" "}
                 with a copy of your {idType === "mykad" ? "MyKad" : "passport"}.
               </p>
@@ -330,7 +330,7 @@ export default function CompliancePage() {
 
         {/* Legal footer */}
         <p className="text-xs text-slate-600 text-center leading-relaxed">
-          NeuralMesh collects identity information to comply with Malaysia's{" "}
+          Hatch collects identity information to comply with Malaysia's{" "}
           <strong className="text-slate-500">Financial Services Act 2013</strong>,{" "}
           <strong className="text-slate-500">Anti-Money Laundering Act 2001</strong>, and{" "}
           <strong className="text-slate-500">Bank Negara Malaysia guidelines</strong>.{" "}

@@ -196,7 +196,7 @@ function JobsInner() {
                 {/* Max price */}
                 <div>
                   <label className="text-xs text-slate-500 block mb-1.5">
-                    Max price — <span className="text-brand-400">{maxPrice.toFixed(3)} NMC/hr</span>
+                    Max price — <span className="text-brand-400">{maxPrice.toFixed(3)} HC/hr</span>
                   </label>
                   <input
                     type="range"
@@ -217,10 +217,10 @@ function JobsInner() {
               <div>
                 <div className="text-xs text-slate-500">Estimated cost</div>
                 <div className="text-lg font-bold text-green-400 font-mono mt-0.5">
-                  ≤ {(maxPrice * hours).toFixed(4)} NMC
+                  ≤ {(maxPrice * hours).toFixed(4)} HC
                 </div>
                 <div className="text-xs text-slate-500">
-                  {hours}h × {maxPrice.toFixed(3)} NMC/hr max
+                  {hours}h × {maxPrice.toFixed(3)} HC/hr max
                 </div>
               </div>
               <button
@@ -298,7 +298,7 @@ function JobsInner() {
                     {/* Cost */}
                     {job.actual_cost_nmc !== undefined && (
                       <span className="text-xs font-mono text-green-400 hidden sm:block">
-                        {job.actual_cost_nmc.toFixed(4)} NMC
+                        {job.actual_cost_nmc.toFixed(4)} HC
                       </span>
                     )}
 

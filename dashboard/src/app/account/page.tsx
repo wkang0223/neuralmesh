@@ -192,8 +192,8 @@ export default function AccountPage() {
                     <DollarSign className="h-5 w-5 text-green-400" />
                   </div>
                   <div className="text-xs font-semibold text-white text-center mt-1">Deposit</div>
-                  <div className="text-xs font-mono text-green-400">$1 = 1 NMC</div>
-                  <div className="text-xs text-slate-500 text-center leading-tight">Stripe → NMC credits in your ledger</div>
+                  <div className="text-xs font-mono text-green-400">$1 = 1 HC</div>
+                  <div className="text-xs text-slate-500 text-center leading-tight">Stripe → HC credits in your ledger</div>
                 </div>
                 <div className="hidden sm:flex items-center text-slate-600 text-xl mt-3">→</div>
                 <div className="relative flex-1 min-w-[110px] flex flex-col items-center gap-1">
@@ -226,24 +226,24 @@ export default function AccountPage() {
 
               {/* Settlement breakdown */}
               <div className="bg-slate-900/60 rounded-xl p-4 space-y-3">
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Where Your NMC Goes (example: 10 NMC job)</div>
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Where Your HC Goes (example: 10 HC job)</div>
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-brand-400 flex-shrink-0" />
                     <div className="flex-1 text-xs text-slate-300">You pay (actual compute time × price/hour)</div>
-                    <div className="font-mono text-xs text-brand-400">10.000 NMC</div>
+                    <div className="font-mono text-xs text-brand-400">10.000 HC</div>
                   </div>
                   <div className="ml-5 space-y-1.5 border-l border-slate-700 pl-4">
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
                       <div className="flex-1 text-xs text-slate-400">Provider earns (92%)</div>
-                      <div className="font-mono text-xs text-green-400">9.200 NMC</div>
+                      <div className="font-mono text-xs text-green-400">9.200 HC</div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-slate-500 flex-shrink-0" />
-                      <div className="flex-1 text-xs text-slate-400">NeuralMesh platform fee (8%)</div>
-                      <div className="font-mono text-xs text-slate-400">0.800 NMC</div>
+                      <div className="flex-1 text-xs text-slate-400">Hatch platform fee (8%)</div>
+                      <div className="font-mono text-xs text-slate-400">0.800 HC</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 pt-1">
@@ -263,7 +263,7 @@ export default function AccountPage() {
                     { label: "→" },
                     { label: "Escrow released", color: "text-brand-400" },
                     { label: "→" },
-                    { label: "92% credited to provider NMC balance", color: "text-green-400" },
+                    { label: "92% credited to provider HC balance", color: "text-green-400" },
                     { label: "→" },
                     { label: "Withdraw to Solana or Arbitrum wallet", color: "text-violet-400" },
                   ].map((item, i) =>
@@ -277,7 +277,7 @@ export default function AccountPage() {
               <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
                 <Info className="h-4 w-4 text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  <strong className="text-slate-300">Phase 1 (now):</strong> Credits are off-chain NMC tracked in a PostgreSQL ledger.
+                  <strong className="text-slate-300">Phase 1 (now):</strong> Credits are off-chain HC tracked in a PostgreSQL ledger.
                   You can withdraw to ETH (Arbitrum) or Solana at any time.{" "}
                   <strong className="text-slate-300">Phase 2:</strong> Credits become fully on-chain SPL tokens (Solana) or ERC-20
                   (Arbitrum) — no trust required.

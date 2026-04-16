@@ -9,18 +9,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand palette — deep space + electric cyan
+        // Brand palette — pastel yellow
         brand: {
-          50:  "#e6fbff",
-          100: "#b3f3ff",
-          200: "#66e6ff",
-          300: "#19d8ff",
-          400: "#00ccff",
-          500: "#00b3e6",
-          600: "#008fb2",
-          700: "#006b85",
-          800: "#004757",
-          900: "#00232a",
+          50:  "#fffef0",
+          100: "#fefce8",
+          200: "#fef9c3",
+          300: "#fef08a",
+          400: "#ffe566",   // primary — bright pastel yellow
+          500: "#f5c518",   // golden amber for hover
+          600: "#d4a017",
+          700: "#a37c12",
+          800: "#6b500c",
+          900: "#3d2e07",
         },
         surface: {
           50:  "#f8fafc",
@@ -36,7 +36,7 @@ const config: Config = {
       },
       backgroundImage: {
         "grid-pattern": "radial-gradient(circle, #1e293b 1px, transparent 1px)",
-        "hero-gradient": "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,204,255,0.15), transparent)",
+        "hero-gradient": "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,229,102,0.12), transparent)",
       },
       animation: {
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -49,8 +49,8 @@ const config: Config = {
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         glow: {
-          "0%": { boxShadow: "0 0 5px rgba(0,204,255,0.3)" },
-          "100%": { boxShadow: "0 0 20px rgba(0,204,255,0.7), 0 0 40px rgba(0,204,255,0.3)" },
+          "0%": { boxShadow: "0 0 5px rgba(255,229,102,0.3)" },
+          "100%": { boxShadow: "0 0 20px rgba(255,229,102,0.7), 0 0 40px rgba(255,229,102,0.3)" },
         },
       },
     },

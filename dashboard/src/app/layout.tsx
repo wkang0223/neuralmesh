@@ -5,14 +5,13 @@ import Navbar from "@/components/Navbar";
 import { Web3Provider } from "@/components/Web3Provider";
 
 export const metadata: Metadata = {
-  title: "NeuralMesh — Decentralized Apple Silicon GPU Marketplace",
+  title: "Hatch — Apple Silicon GPU Marketplace",
   description:
-    "Lease idle Mac Mini M4 Pro and Mac Studio GPU compute for AI inference. " +
-    "Run Llama 3 70B on 48GB unified memory at a fraction of cloud GPU costs.",
+    "Lease idle Mac Mini and Mac Studio GPU compute. Run 70B LLMs on unified memory at a fraction of cloud costs.",
   keywords: ["apple silicon", "gpu marketplace", "MLX", "AI inference", "Mac Mini", "llm hosting"],
   openGraph: {
-    title: "NeuralMesh",
-    description: "Decentralized Apple Silicon GPU Marketplace",
+    title: "Hatch",
+    description: "Apple Silicon GPU Marketplace",
     type: "website",
   },
 };

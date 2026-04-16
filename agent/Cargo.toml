@@ -1,11 +1,11 @@
 [package]
-name = "neuralmesh-agent"
+name = "hatch-agent"
 version.workspace = true
 edition.workspace = true
-default-run = "neuralmesh-agent"
+default-run = "hatch-agent"
 
 [[bin]]
-name = "neuralmesh-agent"
+name = "hatch-agent"
 path = "src/main.rs"
 
 [dependencies]

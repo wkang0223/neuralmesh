@@ -1,10 +1,10 @@
-//! `nm` — NeuralMesh CLI
+//! `hatch` — Hatch CLI
 //!
 //! Usage:
-//!   nm provider install|start|stop|status|config
-//!   nm job submit|list|logs|cancel
-//!   nm gpu list|benchmark
-//!   nm wallet balance|deposit|withdraw|history
+//!   hatch provider install|start|stop|status|config
+//!   hatch job submit|list|logs|cancel
+//!   hatch gpu list|benchmark
+//!   hatch wallet balance|deposit|withdraw|history
 
 mod commands;
 mod client;
@@ -15,19 +15,19 @@ use clap::{Parser, Subcommand};
 use colored::Colorize;
 
 const BANNER: &str = r#"
-  _   _                      _ __  __           _
- | \ | | ___ _   _ _ __ __ _| |  \/  | ___  ___| |__
- |  \| |/ _ \ | | | '__/ _` | | |\/| |/ _ \/ __| '_ \
- | |\  |  __/ |_| | | | (_| | | |  | |  __/\__ \ | | |
- |_| \_|\___|\__,_|_|  \__,_|_|_|  |_|\___||___/_| |_|
+  _   _       _       _
+ | | | | __ _| |_ ___| |__
+ | |_| |/ _` | __/ __| '_ \
+ |  _  | (_| | || (__| | | |
+ |_| |_|\__,_|\__\___|_| |_|
 
- Decentralized Apple Silicon GPU Marketplace
+ Apple Silicon GPU Marketplace
 "#;
 
 #[derive(Parser)]
 #[command(
-    name = "nm",
-    about = "NeuralMesh CLI — lease or use idle Apple Silicon GPUs",
+    name = "hatch",
+    about = "Hatch CLI — lease or use idle Apple Silicon GPUs",
     version,
     propagate_version = true,
 )]

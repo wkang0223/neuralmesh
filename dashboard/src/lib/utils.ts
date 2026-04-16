@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatNmc(amount: number, decimals = 4): string {
-  return amount.toFixed(decimals) + " NMC";
+  return amount.toFixed(decimals) + " HC";
 }
 
 export function formatRam(gb: number): string {

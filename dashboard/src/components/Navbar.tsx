@@ -44,7 +44,7 @@ export default function Navbar() {
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-brand-400 animate-pulse" />
             </div>
             <span className="font-bold text-white tracking-tight">
-              Neural<span className="text-brand-400">Mesh</span>
+              <span className="text-brand-400">Hatch</span>
             </span>
           </Link>
 

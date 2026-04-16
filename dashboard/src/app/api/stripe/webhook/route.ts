@@ -3,7 +3,7 @@ import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
 
 // Stripe sends this webhook after a successful payment.
-// We credit the user's NMC balance via the coordinator's internal ledger API.
+// We credit the user's HC balance via the coordinator's internal ledger API.
 // Stripe auto-pays out to your bank account separately (configured in Stripe Dashboard).
 //
 // To test locally: stripe listen --forward-to localhost:3000/api/stripe/webhook
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     if (!creditRes.ok) {
       const text = await creditRes.text();
-      console.error("Failed to credit NMC after Stripe payment:", text);
+      console.error("Failed to credit HC after Stripe payment:", text);
       // Return 500 so Stripe retries the webhook
       return NextResponse.json({ error: "Credit failed" }, { status: 500 });
     }

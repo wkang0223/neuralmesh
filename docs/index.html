@@ -3,360 +3,627 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NeuralMesh — Decentralized Apple Silicon GPU Marketplace</title>
+  <title>Hatch — Apple Silicon GPU Marketplace</title>
+  <meta name="description" content="Lease idle Mac Minis and Mac Studios for ML compute. Run 70B LLMs on unified memory. Earn while your Mac sleeps." />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-      background: #0a0a0f;
-      color: #e8e8f0;
-      line-height: 1.6;
-    }
-    a { color: #7c9eff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Hero */
+    :root {
+      --yellow:     #ffe566;
+      --yellow-dim: #f5c518;
+      --yellow-bg:  rgba(255, 229, 102, 0.08);
+      --yellow-border: rgba(255, 229, 102, 0.2);
+      --bg:   #09090b;
+      --bg2:  #111108;
+      --card: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.07);
+      --text: #f5f0d8;
+      --muted: #6b6850;
+      --muted2: #4a4738;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--yellow); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { font-family: "SF Mono", "Fira Code", "JetBrains Mono", monospace; }
+
+    /* ── Nav ─────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      background: rgba(9,9,11,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--yellow);
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 0.25rem; }
+    .nav-links a {
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); text-decoration: none; }
+    .nav-cta {
+      padding: 0.45rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--yellow);
+      color: #1a1600;
+      transition: background 0.15s;
+    }
+    .nav-cta:hover { background: var(--yellow-dim); text-decoration: none; }
+
+    /* ── Hero ─────────────────────────────────── */
     .hero {
-      min-height: 100vh;
+      min-height: calc(100vh - 56px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 4rem 2rem;
-      background: radial-gradient(ellipse at 50% 0%, rgba(100, 120, 255, 0.15) 0%, transparent 70%);
+      padding: 5rem 1.5rem 4rem;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% -10%, rgba(255,229,102,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 80% 90%, rgba(255,200,50,0.04) 0%, transparent 50%);
     }
-    .badge {
-      display: inline-block;
-      background: rgba(100, 120, 255, 0.15);
-      border: 1px solid rgba(100, 120, 255, 0.3);
-      color: #7c9eff;
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-border);
+      color: var(--yellow);
       padding: 0.3rem 1rem;
       border-radius: 999px;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: blink 1.8s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
     h1 {
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #fff 40%, #7c9eff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
       margin-bottom: 1.5rem;
     }
-    .subtitle {
-      font-size: 1.25rem;
-      color: #888;
-      max-width: 560px;
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #ffe566 30%, #f5c518 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 520px;
       margin: 0 auto 3rem;
+      line-height: 1.7;
     }
-    .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-    .btn {
-      padding: 0.8rem 2rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-    }
-    .btn-primary {
-      background: #4f6fff;
-      color: #fff;
-    }
-    .btn-primary:hover { background: #6b83ff; text-decoration: none; }
-    .btn-secondary {
-      background: rgba(255,255,255,0.06);
-      color: #e8e8f0;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .btn-secondary:hover { background: rgba(255,255,255,0.1); text-decoration: none; }
 
-    /* Install block */
-    .install-block {
-      margin-top: 3rem;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 1.2rem 2rem;
-      max-width: 640px;
+    /* ── Download section ─────────────────────── */
+    .download-box {
+      width: 100%;
+      max-width: 680px;
+      background: rgba(255,229,102,0.04);
+      border: 1px solid var(--yellow-border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 0 auto 2rem;
       text-align: left;
     }
-    .install-block .label {
+    .download-box h3 {
       font-size: 0.75rem;
-      color: #555;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      margin-bottom: 0.5rem;
+      color: var(--yellow);
+      font-weight: 700;
+      margin-bottom: 1rem;
     }
-    .install-block code {
-      font-family: "SF Mono", "Fira Code", monospace;
-      font-size: 0.9rem;
-      color: #a8d8a8;
-    }
-
-    /* Stats bar */
-    .stats {
+    .install-cmd {
       display: flex;
-      gap: 3rem;
-      justify-content: center;
-      padding: 2rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
       flex-wrap: wrap;
     }
-    .stat { text-align: center; }
-    .stat-value { font-size: 2rem; font-weight: 700; color: #7c9eff; }
-    .stat-label { font-size: 0.8rem; color: #555; margin-top: 0.25rem; }
+    .install-cmd code { font-size: 0.8rem; color: #a8d8a8; flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; }
+    .copy-btn {
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-border);
+      color: var(--yellow);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: rgba(255,229,102,0.15); }
+    .copy-btn.copied { color: #50c878; border-color: rgba(80,200,120,0.3); background: rgba(80,200,120,0.08); }
 
-    /* Features */
-    .section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
-    .section-title {
-      font-size: 2rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 3rem;
-      letter-spacing: -0.02em;
+    .dl-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .dl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.15s;
+      white-space: nowrap;
     }
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+    .dl-btn-primary {
+      background: var(--yellow);
+      color: #1a1600;
     }
-    .feature {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px;
-      padding: 2rem;
+    .dl-btn-primary:hover { background: var(--yellow-dim); text-decoration: none; }
+    .dl-btn-ghost {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
     }
-    .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .feature h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-    .feature p { color: #666; font-size: 0.9rem; }
+    .dl-btn-ghost:hover { background: rgba(255,255,255,0.06); text-decoration: none; }
 
-    /* Mac table */
-    .mac-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 2rem;
-    }
-    .mac-table th {
-      text-align: left;
-      padding: 0.75rem 1rem;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #555;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .mac-table td {
-      padding: 0.9rem 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.9rem;
-    }
-    .mac-table tr:hover td { background: rgba(255,255,255,0.02); }
-    .badge-green {
-      background: rgba(80, 200, 120, 0.15);
-      color: #50c878;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
+    .dl-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+      color: var(--muted2);
       font-size: 0.75rem;
     }
-
-    /* How it works */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 2rem;
-      counter-reset: steps;
+    .dl-divider::before, .dl-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
-    .step { position: relative; }
-    .step-num {
-      font-size: 3rem;
-      font-weight: 800;
-      color: rgba(100, 120, 255, 0.2);
-      line-height: 1;
-      margin-bottom: 0.5rem;
-    }
-    .step h3 { font-size: 1rem; margin-bottom: 0.4rem; }
-    .step p { font-size: 0.85rem; color: #666; }
 
-    /* Footer */
-    footer {
+    /* ── Stats ─────────────────────────────────── */
+    .stats-row {
+      display: flex;
+      gap: 0;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      flex: 1;
+      min-width: 160px;
+      padding: 2rem 1.5rem;
       text-align: center;
-      padding: 3rem 2rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      color: #444;
-      font-size: 0.85rem;
+      border-right: 1px solid var(--border);
     }
-    footer a { color: #555; }
+    .stat-item:last-child { border-right: none; }
+    .stat-val { font-size: 2.2rem; font-weight: 800; color: var(--yellow); letter-spacing: -0.03em; }
+    .stat-lbl { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* ── Section ─────────────────────────────────── */
+    section { padding: 5rem 1.5rem; }
+    .inner { max-width: 1080px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--yellow);
+      margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .section-sub { color: var(--muted); max-width: 520px; margin-bottom: 3rem; font-size: 0.95rem; }
+
+    /* ── Mac table ─────────────────────────────── */
+    .mac-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .mac-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    .mac-table td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .mac-table tr:hover td { background: var(--card); }
+    .mac-table tr.highlight td { background: rgba(255,229,102,0.04); }
+    .mac-table tr.highlight td:first-child { border-left: 2px solid var(--yellow); padding-left: calc(1rem - 2px); }
+    .tag {
+      display: inline-block;
+      background: rgba(255,229,102,0.12);
+      color: var(--yellow);
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    /* ── Features ─────────────────────────────── */
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color 0.2s;
+    }
+    .feature-card:hover { border-color: var(--yellow-border); }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 0.85rem; }
+    .feature-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feature-card p { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Steps ─────────────────────────────────── */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2.5rem; }
+    .step-num { font-size: 0.72rem; font-weight: 700; color: var(--yellow); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .step p { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Deploy / fork row ─────────────────────── */
+    .action-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 3rem; }
+    .action-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s;
+    }
+    .action-card:hover { border-color: var(--yellow-border); }
+    .action-card .act-icon { font-size: 2rem; }
+    .action-card h3 { font-size: 1.05rem; font-weight: 700; }
+    .action-card p { font-size: 0.83rem; color: var(--muted); line-height: 1.6; flex: 1; }
+    .act-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid var(--yellow-border);
+      color: var(--yellow);
+      background: var(--yellow-bg);
+      transition: background 0.15s;
+      align-self: flex-start;
+      margin-top: auto;
+    }
+    .act-btn:hover { background: rgba(255,229,102,0.15); text-decoration: none; }
+
+    /* ── Footer ─────────────────────────────────── */
+    footer {
+      padding: 3rem 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted2);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
+
+    /* ── Responsive ─────────────────────────────── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-item:last-child { border-bottom: none; }
+      .install-cmd { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
 
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">Hatch<span>.</span></div>
+  <div class="nav-links">
+    <a href="#download">Download</a>
+    <a href="#how">How it works</a>
+    <a href="#deploy">Deploy</a>
+    <a href="https://github.com/wkang0223/neuralmesh">GitHub</a>
+  </div>
+  <a class="nav-cta" href="https://neuralmesh-dashboard-production-4f37.up.railway.app">Open Dashboard →</a>
+</nav>
+
 <!-- Hero -->
-<section class="hero">
-  <div class="badge">Phase 1 — Apple Silicon</div>
-  <h1>Your idle Mac<br>earns while it sleeps.</h1>
-  <p class="subtitle">
-    NeuralMesh turns idle Mac Minis and Mac Studios into a global GPU network.
-    Earn NMC credits when your screen is locked. Pay pennies to run LLMs on 192GB of unified memory.
+<div class="hero">
+  <div class="pill"><span class="pill-dot"></span> Phase 1 · Apple Silicon · Live</div>
+
+  <h1>Your Mac earns<br>while it <em>sleeps.</em></h1>
+  <p class="hero-sub">
+    Hatch turns idle Mac Minis and Mac Studios into a global GPU network.
+    Lock your screen and earn HC credits. Pay cents to run 70B LLMs on 192 GB of unified memory.
   </p>
-  <div class="cta-group">
-    <a class="btn btn-primary" href="https://neuralmesh-dashboard-production-4f37.up.railway.app">Open Dashboard</a>
-    <a class="btn btn-secondary" href="https://github.com/wkang0223/neuralmesh">View on GitHub</a>
+
+  <!-- Download box -->
+  <div class="download-box" id="download">
+    <h3>⚡ Quick Install — Provider (Apple Silicon, macOS 14+)</h3>
+
+    <div class="install-cmd">
+      <code>curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash</code>
+      <button class="copy-btn" onclick="copyCmd(this, 'curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash')">Copy</button>
+    </div>
+
+    <div class="dl-divider">or download binaries directly</div>
+
+    <div class="dl-buttons">
+      <a class="dl-btn dl-btn-primary" href="https://github.com/wkang0223/neuralmesh/releases/latest/download/hatch-agent-darwin-arm64">
+        ↓ hatch-agent  <small style="opacity:0.7; font-weight:400">darwin-arm64</small>
+      </a>
+      <a class="dl-btn dl-btn-ghost" href="https://github.com/wkang0223/neuralmesh/releases/latest/download/hatch-darwin-arm64">
+        ↓ hatch CLI  <small style="opacity:0.7; font-weight:400">darwin-arm64</small>
+      </a>
+      <a class="dl-btn dl-btn-ghost" href="https://github.com/wkang0223/neuralmesh/releases">
+        All releases →
+      </a>
+    </div>
   </div>
 
-  <div class="install-block">
-    <div class="label">Provider Install — one command</div>
-    <code>curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash</code>
+  <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+    <a class="dl-btn dl-btn-ghost" href="https://neuralmesh-dashboard-production-4f37.up.railway.app">Open Dashboard</a>
+    <a class="dl-btn dl-btn-ghost" href="https://github.com/wkang0223/neuralmesh">★ Fork on GitHub</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat-item">
+    <div class="stat-val">192 GB</div>
+    <div class="stat-lbl">Max unified memory per node</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val">$0.05</div>
+    <div class="stat-lbl">HC per hour starting price</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val">0 ms</div>
+    <div class="stat-lbl">CPU↔GPU copy overhead</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val">70B+</div>
+    <div class="stat-lbl">LLM on a single Mac Mini M4 Pro</div>
+  </div>
+</div>
+
+<!-- Mac table -->
+<section>
+  <div class="inner">
+    <div class="section-label">Hardware</div>
+    <h2>Why Apple Silicon?</h2>
+    <p class="section-sub">Unified memory means the GPU and CPU share one pool. No copies. Full bandwidth. A $1,400 Mac Mini M4 Pro outperforms a $30,000 pair of A100s for 70B LLM inference.</p>
+
+    <table class="mac-table">
+      <thead>
+        <tr>
+          <th>Machine</th>
+          <th>Unified RAM</th>
+          <th>GPU Cores</th>
+          <th>Best For</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mac Mini M4</td>
+          <td>16 – 24 GB</td>
+          <td>10</td>
+          <td>7B – 13B inference, agents</td>
+          <td>$599</td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>Mac Mini M4 Pro</strong> <span class="tag">Best value</span></td>
+          <td><strong>24 – 64 GB</strong></td>
+          <td><strong>20</strong></td>
+          <td><strong>30B – 70B LLM inference</strong></td>
+          <td>$1,399</td>
+        </tr>
+        <tr>
+          <td>Mac Studio M4 Max</td>
+          <td>64 – 128 GB</td>
+          <td>40</td>
+          <td>70B fine-tuning, multi-modal</td>
+          <td>$1,999</td>
+        </tr>
+        <tr>
+          <td>Mac Studio M4 Ultra</td>
+          <td>128 – 192 GB</td>
+          <td>80</td>
+          <td>405B shards, full pipeline</td>
+          <td>$3,999</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<!-- Stats -->
-<div class="stats">
-  <div class="stat">
-    <div class="stat-value">192 GB</div>
-    <div class="stat-label">Max unified memory per node (M4 Ultra)</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">$0.05</div>
-    <div class="stat-label">NMC per hour (starting price)</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">0</div>
-    <div class="stat-label">CPU↔GPU copy overhead</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">70B+</div>
-    <div class="stat-label">LLM on a single Mac Mini M4 Pro</div>
-  </div>
-</div>
+<!-- How it works -->
+<section id="how" style="background: var(--bg2);">
+  <div class="inner">
+    <div class="section-label">Flow</div>
+    <h2>How it works</h2>
+    <p class="section-sub">Three commands and your Mac is earning. Jobs run in an isolated macOS sandbox — you never lose control.</p>
 
-<!-- Mac comparison table -->
-<div class="section">
-  <h2 class="section-title">Why Apple Silicon?</h2>
-  <table class="mac-table">
-    <thead>
-      <tr>
-        <th>Machine</th>
-        <th>Unified RAM</th>
-        <th>GPU Cores</th>
-        <th>Best For</th>
-        <th>Retail</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Mac Mini M4</td>
-        <td>16–24 GB</td>
-        <td>10</td>
-        <td>7B–13B inference, simulation</td>
-        <td>$599</td>
-      </tr>
-      <tr>
-        <td><strong>Mac Mini M4 Pro</strong></td>
-        <td><strong>24–64 GB</strong></td>
-        <td><strong>20</strong></td>
-        <td><strong>30B–70B LLM inference</strong></td>
-        <td><strong>$1,399</strong></td>
-      </tr>
-      <tr>
-        <td>Mac Studio M4 Max</td>
-        <td>64–128 GB</td>
-        <td>40</td>
-        <td>70B inference, fine-tuning</td>
-        <td>$1,999</td>
-      </tr>
-      <tr>
-        <td>Mac Studio M4 Ultra</td>
-        <td>128–192 GB</td>
-        <td>80</td>
-        <td>405B LLM shards, full pipeline</td>
-        <td>$3,999</td>
-      </tr>
-    </tbody>
-  </table>
-  <p style="color:#555; font-size:0.85rem; margin-top:1rem; text-align:center;">
-    Unified memory = the GPU and CPU share the same pool. No copies. Full bandwidth. Every GB counts.
-  </p>
-</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">Step 01</div>
+        <h3>Install Hatch</h3>
+        <p>One-line installer. Creates the <code>hatch_worker</code> isolation user, installs MLX & PyTorch MPS runtimes, and registers a launchd daemon that starts on boot.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 02</div>
+        <h3>Lock your screen</h3>
+        <p>The agent polls GPU utilization via IOKit every 30 s. Once GPU stays below 5% for 10 minutes with your screen locked, your Mac announces itself as available.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 03</div>
+        <h3>Jobs run automatically</h3>
+        <p>The coordinator matches jobs to your Mac by RAM requirement and runtime. Jobs execute inside a <code>sandbox-exec</code> profile — file and network access fully restricted.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 04</div>
+        <h3>Withdraw HC credits</h3>
+        <p>Earnings settle instantly in HC (Hatch Credits). Cash out to USDC on Arbitrum or spend credits to run your own compute jobs.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- Features -->
-<div class="section">
-  <h2 class="section-title">Built for idle Macs</h2>
-  <div class="features">
-    <div class="feature">
-      <div class="feature-icon">🔒</div>
-      <h3>Screen-lock detection</h3>
-      <p>Uses macOS CGSession API to detect when your screen is locked. Your GPU only leases when you're away.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📊</div>
-      <h3>IOKit GPU monitoring</h3>
-      <p>Polls IOAccelStatistics2 every 30 seconds. Drops off the network the moment your GPU spikes above 5%.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🛡️</div>
-      <h3>sandboxed execution</h3>
-      <p>Jobs run as a restricted <code>neuralmesh_worker</code> OS user with macOS sandbox-exec profiles. No filesystem or network access beyond the job directory.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">⚡</div>
-      <h3>MLX & Metal native</h3>
-      <p>Jobs run natively with Apple's MLX framework and PyTorch MPS backend. Zero virtualization overhead — full Metal GPU access.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">💰</div>
-      <h3>NMC credits</h3>
-      <p>Earn off-chain NMC credits (Phase 1). Signed Ed25519 escrow receipts prove your earnings. On-chain Arbitrum settlement in Phase 3.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🌍</div>
-      <h3>No existing platform does this</h3>
-      <p>io.net, Vast.ai, Salad, Akash — none support Apple Silicon. This is the gap NeuralMesh fills.</p>
-    </div>
-  </div>
-</div>
+<section>
+  <div class="inner">
+    <div class="section-label">Features</div>
+    <h2>Built for idle Macs</h2>
+    <p class="section-sub">No existing platform — io.net, Vast.ai, Salad, Akash — supports Apple Silicon. Hatch fills that gap.</p>
 
-<!-- How it works -->
-<div class="section">
-  <h2 class="section-title">How it works</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">01</div>
-      <h3>Install the agent</h3>
-      <p>One-line installer. Creates the neuralmesh_worker isolation user, installs MLX & PyTorch MPS runtimes, and registers a launchd daemon.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">02</div>
-      <h3>Lock your screen</h3>
-      <p>When your GPU util stays below 5% for 10 minutes with your screen locked, your Mac announces itself as available.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">03</div>
-      <h3>Jobs run automatically</h3>
-      <p>The coordinator matches incoming jobs to your Mac. Jobs execute in an isolated sandbox. You earn NMC per GPU-hour.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">04</div>
-      <h3>Withdraw earnings</h3>
-      <p>Cash out NMC credits to USDC on Arbitrum, or use them to submit your own compute jobs.</p>
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Screen-lock aware</h3>
+        <p>Uses macOS CGSession API. Your GPU only leases when your screen is locked and GPU is truly idle.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>IOKit GPU monitoring</h3>
+        <p>Reads IOAccelStatistics2 every 30 s. Drops off the network the instant your GPU spikes above threshold.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>macOS sandbox isolation</h3>
+        <p>Jobs run as a restricted <code>hatch_worker</code> OS user with <code>sandbox-exec</code> profiles — no filesystem or outbound network beyond the job directory.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>MLX &amp; Metal native</h3>
+        <p>Full Metal GPU access. MLX and PyTorch MPS backends run at native speed — zero virtualization overhead.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>HC credits (off-chain → on-chain)</h3>
+        <p>Phase 1: signed Ed25519 escrow receipts in PostgreSQL. Phase 3: trustless settlement on Arbitrum L2.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🦀</div>
+        <h3>Rust throughout</h3>
+        <p>Agent, coordinator, and ledger are all written in Rust. Single binary per component — no runtime dependencies.</p>
+      </div>
     </div>
   </div>
-</div>
+</section>
+
+<!-- Deploy / Fork / Download -->
+<section id="deploy" style="background: var(--bg2);">
+  <div class="inner">
+    <div class="section-label">Get Started</div>
+    <h2>Three ways in</h2>
+    <p class="section-sub">Use the live network, self-host on Railway, or fork and build your own.</p>
+
+    <div class="action-row">
+
+      <div class="action-card">
+        <div class="act-icon">⬇️</div>
+        <h3>Download &amp; run (Mac provider)</h3>
+        <p>Install the Hatch agent on your M-series Mac. One command — detects your chip, installs runtimes, sets up launchd, and starts earning.</p>
+        <div style="background:rgba(0,0,0,0.35); border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem; font-size:0.76rem; margin:0.5rem 0;">
+          <code style="color:#a8d8a8;">curl -fsSL https://raw.githubusercontent.com/wkang0223/neuralmesh/master/scripts/install-agent-macos.sh | bash</code>
+        </div>
+        <a class="act-btn" href="https://github.com/wkang0223/neuralmesh/releases/latest">Download binaries →</a>
+      </div>
+
+      <div class="action-card">
+        <div class="act-icon">🚀</div>
+        <h3>Deploy your own coordinator</h3>
+        <p>Self-host the coordinator + ledger on Railway in minutes. Click deploy, add a Postgres database, set three env vars, and you have your own private Hatch network.</p>
+        <div style="font-size:0.78rem; color:var(--muted); background:var(--card); border:1px solid var(--border); border-radius:8px; padding:0.75rem; margin:0.5rem 0; line-height:1.8;">
+          <div>1. Fork the repo on GitHub</div>
+          <div>2. Create a Railway project</div>
+          <div>3. Add Postgres + deploy 2 services</div>
+        </div>
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <a class="act-btn" href="https://railway.app/new" target="_blank">Deploy on Railway →</a>
+          <a class="act-btn" style="background:transparent;" href="https://github.com/wkang0223/neuralmesh/blob/master/render.yaml" target="_blank">View config</a>
+        </div>
+      </div>
+
+      <div class="action-card">
+        <div class="act-icon">🍴</div>
+        <h3>Fork &amp; customize</h3>
+        <p>Full Rust monorepo — agent, coordinator, ledger, CLI, Next.js dashboard. Apache 2.0 licensed. Build your own GPU marketplace on top.</p>
+        <div style="font-size:0.78rem; color:var(--muted); background:var(--card); border:1px solid var(--border); border-radius:8px; padding:0.75rem; margin:0.5rem 0; line-height:1.8;">
+          <div><code style="color:var(--yellow);">cargo build -p hatch-agent</code></div>
+          <div><code style="color:var(--yellow);">cargo build -p neuralmesh-coordinator</code></div>
+          <div><code style="color:var(--yellow);">cargo build -p hatch</code></div>
+        </div>
+        <a class="act-btn" href="https://github.com/wkang0223/neuralmesh" target="_blank">★ Fork on GitHub →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <!-- Footer -->
 <footer>
-  <p>
-    <a href="https://github.com/wkang0223/neuralmesh">GitHub</a> ·
-    <a href="https://neuralmesh-dashboard-production-4f37.up.railway.app">Dashboard</a> ·
+  <div class="footer-links">
+    <a href="https://github.com/wkang0223/neuralmesh">GitHub</a>
     <a href="https://github.com/wkang0223/neuralmesh/releases">Releases</a>
-  </p>
-  <p style="margin-top:0.75rem">NeuralMesh — Phase 1: Apple Silicon. Phase 4: NVIDIA, AMD, Intel Arc.</p>
+    <a href="https://neuralmesh-dashboard-production-4f37.up.railway.app">Dashboard</a>
+    <a href="https://github.com/wkang0223/neuralmesh/blob/master/render.yaml">Deploy config</a>
+    <a href="mailto:compliance@hatch.dev">Contact</a>
+  </div>
+  <p>Hatch · Apache 2.0 · Phase 1: Apple Silicon · Phase 4: NVIDIA, AMD, Intel Arc</p>
 </footer>
 
+<script>
+function copyCmd(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = "Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+  });
+}
+</script>
 </body>
 </html>
