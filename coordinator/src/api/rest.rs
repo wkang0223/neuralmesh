@@ -15,8 +15,8 @@ use tower_http::cors::CorsLayer;
 use tracing::{info, warn};
 use uuid::Uuid;
 
-pub async fn serve(state: AppState, addr: String) -> Result<()> {
-    let app = Router::new()
+pub fn build_router(state: AppState) -> Router {
+    Router::new()
         .route("/health",                    get(health))
         .route("/api/v1/providers",          get(list_providers))
         .route("/api/v1/providers/:id",      get(get_provider))
@@ -47,8 +47,11 @@ pub async fn serve(state: AppState, addr: String) -> Result<()> {
         // ── Ledger (Stripe webhook credits) ──────────────────────────────
         .route("/api/v1/ledger/stripe-credit",  post(stripe_credit))
         .layer(CorsLayer::permissive())
-        .with_state(state);
+        .with_state(state)
+}
 
+pub async fn serve(state: AppState, addr: String) -> Result<()> {
+    let app = build_router(state);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
     info!(addr = %addr, "REST API server listening");
     axum::serve(listener, app).await?;

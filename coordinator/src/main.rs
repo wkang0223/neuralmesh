@@ -90,12 +90,25 @@ async fn main() -> Result<()> {
         nats:   nats.clone(),
         redis,
         oracle,
+        ledger_url: cli.ledger_url.clone(),
     };
 
-    // Start background services in parallel
+    // Build a single combined axum router: gRPC routes merged with REST routes.
+    // tonic 0.12 exposes `Server::into_router()` which returns an axum::Router,
+    // so we can simply merge the two routers and serve both on one port.
+    // This is required for Railway deployments that expose only a single port.
+    let grpc_router = api::grpc::build_router(state.clone());
+    let rest_router = api::rest::build_router(state.clone());
+    // gRPC routes are matched by path prefix (/neuralmesh.*); REST uses /api/v1/*.
+    // Merging puts both in the same axum Router — axum picks by path first,
+    // and tonic's routing is path-based so there are no conflicts.
+    let app = grpc_router.merge(rest_router);
+
+    let listener = tokio::net::TcpListener::bind(&cli.rest_addr).await?;
+    info!(addr = %cli.rest_addr, "Serving REST + gRPC on single port");
+
     tokio::try_join!(
-        api::grpc::serve(state.clone(), cli.grpc_addr.clone()),
-        api::rest::serve(state.clone(), cli.rest_addr.clone()),
+        async { axum::serve(listener, app).await.map_err(anyhow::Error::from) },
         matching::run_auction_loop(db.clone(), nats),
         matching::run_heartbeat_watcher(db.clone()),
     )?;

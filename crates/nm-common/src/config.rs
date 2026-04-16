@@ -31,9 +31,9 @@ impl Default for AgentConfig {
                 "llama-cpp".into(),
             ],
             coordinator_endpoints: vec![
-                "https://coord1.neuralmesh.io:9090".into(),
-                "https://coord2.neuralmesh.io:9090".into(),
-                "https://coord3.neuralmesh.io:9090".into(),
+                "https://coord1.neuralmesh.io:8080".into(),
+                "https://coord2.neuralmesh.io:8080".into(),
+                "https://coord3.neuralmesh.io:8080".into(),
             ],
             region: detect_region(),
             wireguard_listen_port: 51820,

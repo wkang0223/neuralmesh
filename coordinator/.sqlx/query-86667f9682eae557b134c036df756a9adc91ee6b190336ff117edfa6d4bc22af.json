@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        INSERT INTO milestone_rewards\n                            (provider_id, milestone_hours, reward_hc, account_id, tx_id)\n                        VALUES ($1, $2, $3, $4, $5)\n                        ON CONFLICT (provider_id, milestone_hours) DO NOTHING\n                        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Float8",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "86667f9682eae557b134c036df756a9adc91ee6b190336ff117edfa6d4bc22af"
+}

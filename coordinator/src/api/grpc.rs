@@ -15,7 +15,17 @@ use nm_proto::job::{
 };
 use tonic::{transport::Server, Request, Response, Status};
 use tracing::{error, info, warn};
+use serde_json;
 use uuid::Uuid;
+
+/// Build a tonic Router containing all gRPC services.
+/// Can be merged with an axum Router via `axum::Router::merge`.
+pub fn build_router(state: AppState) -> axum::Router {
+    Server::builder()
+        .add_service(AgentServiceServer::new(AgentGrpcService { state: state.clone() }))
+        .add_service(ConsumerServiceServer::new(ConsumerGrpcService { state }))
+        .into_router()
+}
 
 pub async fn serve(state: AppState, addr: String) -> Result<()> {
     let addr_parsed = addr.parse()?;
@@ -166,10 +176,10 @@ impl AgentService for AgentGrpcService {
         info!(job_id = %jc.job_id, exit_code = jc.exit_code, "Job completion reported");
 
         // Update job state
-        let state = if jc.exit_code == 0 { "complete" } else { "failed" };
+        let job_state = if jc.exit_code == 0 { "complete" } else { "failed" };
         sqlx::query!(
             "UPDATE jobs SET state = $1, output_hash = $2, actual_runtime_s = $3, completed_at = now() WHERE job_id = $4",
-            state,
+            job_state,
             jc.output_hash,
             jc.actual_runtime_s as i64,
             jc.job_id,
@@ -178,6 +188,105 @@ impl AgentService for AgentGrpcService {
         .await
         .map_err(|e| Status::internal(format!("DB: {}", e)))?;
 
+        // ── GPU hour milestone rewards ───────────────────────────────────────
+        if job_state == "complete" && !jc.provider_id.is_empty() {
+            let hours = jc.actual_runtime_s as f64 / 3600.0;
+
+            // Update provider's total GPU hours contributed
+            let updated = sqlx::query!(
+                r#"
+                UPDATE providers
+                SET total_gpu_hours_contributed = COALESCE(total_gpu_hours_contributed, 0.0) + $1
+                WHERE provider_id = $2
+                RETURNING total_gpu_hours_contributed
+                "#,
+                hours,
+                jc.provider_id,
+            )
+            .fetch_optional(&self.state.db)
+            .await
+            .ok()
+            .flatten();
+
+            if let Some(row) = updated {
+                let total_hours = row.total_gpu_hours_contributed.unwrap_or(0.0);
+                let milestones_earned = (total_hours / 8.0) as i32;
+
+                // Count already-claimed milestones
+                let claimed = sqlx::query_scalar!(
+                    "SELECT COUNT(*) FROM milestone_rewards WHERE provider_id = $1",
+                    jc.provider_id,
+                )
+                .fetch_one(&self.state.db)
+                .await
+                .unwrap_or(Some(0))
+                .unwrap_or(0) as i32;
+
+                // Issue rewards for each unclaimed milestone
+                for milestone_num in (claimed + 1)..=(milestones_earned) {
+                    let milestone_hours = milestone_num * 8;
+                    let reward_hc = 50.0_f64;
+                    let account_id = jc.provider_id.clone();
+
+                    let ledger_url = std::env::var("NM_LEDGER_URL")
+                        .unwrap_or_else(|_| "http://localhost:8082".into());
+
+                    let client = reqwest::Client::new();
+                    let tx_id = match client
+                        .post(format!("{}/api/v1/wallet/{}/deposit", ledger_url, account_id))
+                        .json(&serde_json::json!({
+                            "amount_nmc": reward_hc,
+                            "reference": format!("milestone_{}h", milestone_hours),
+                        }))
+                        .send()
+                        .await
+                    {
+                        Ok(resp) if resp.status().is_success() => {
+                            resp.json::<serde_json::Value>().await
+                                .ok()
+                                .and_then(|v| v["transaction_id"].as_str().map(String::from))
+                        }
+                        Ok(resp) => {
+                            warn!(
+                                status = %resp.status(),
+                                milestone_hours,
+                                "Ledger reward call failed for milestone"
+                            );
+                            None
+                        }
+                        Err(e) => {
+                            warn!(error = %e, "Could not reach ledger for milestone reward");
+                            None
+                        }
+                    };
+
+                    // Record milestone — ON CONFLICT DO NOTHING prevents double-paying
+                    let _ = sqlx::query!(
+                        r#"
+                        INSERT INTO milestone_rewards
+                            (provider_id, milestone_hours, reward_hc, account_id, tx_id)
+                        VALUES ($1, $2, $3, $4, $5)
+                        ON CONFLICT (provider_id, milestone_hours) DO NOTHING
+                        "#,
+                        jc.provider_id,
+                        milestone_hours,
+                        reward_hc,
+                        account_id,
+                        tx_id,
+                    )
+                    .execute(&self.state.db)
+                    .await;
+
+                    info!(
+                        provider_id = %jc.provider_id,
+                        milestone_hours,
+                        reward_hc,
+                        "GPU hour milestone reward issued"
+                    );
+                }
+            }
+        }
+
         // TODO: trigger escrow release in ledger
         let credits = crate::matching::calculate_credits(&self.state.db, &jc.job_id).await
             .unwrap_or(0.0);
@@ -185,7 +294,7 @@ impl AgentService for AgentGrpcService {
         Ok(Response::new(JobCompleteAck {
             ok: true,
             credits_earned: credits,
-            message: format!("Job {}: {} — earned {:.4} NMC", jc.job_id, state, credits),
+            message: format!("Job {}: {} — earned {:.4} NMC", jc.job_id, job_state, credits),
         }))
     }
 }

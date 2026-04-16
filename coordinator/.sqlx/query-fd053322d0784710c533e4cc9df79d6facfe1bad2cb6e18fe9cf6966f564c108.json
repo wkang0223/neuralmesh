@@ -122,6 +122,11 @@
         "ordinal": 23,
         "name": "updated_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 24,
+        "name": "total_gpu_hours_contributed",
+        "type_info": "Float8"
       }
     ],
     "parameters": {
@@ -131,6 +136,7 @@
     },
     "nullable": [
       false,
+      true,
       true,
       true,
       true,

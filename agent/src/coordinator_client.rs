@@ -59,11 +59,13 @@ impl CoordinatorClient {
         &self.provider_id
     }
 
-    /// Derive REST base URL from gRPC endpoint (swap port 9090 → 8080).
+    /// REST base URL — same as the gRPC endpoint since both are now served on a single port.
     pub fn rest_base(&self) -> String {
+        // gRPC and REST are multiplexed on the same port; no port swap needed.
+        // Keep the legacy 9090→8080 swap for any old config files that still
+        // specify port 9090.
         self.endpoint_str
             .replace(":9090", ":8080")
-            .replace("localhost:9090", "localhost:8080")
     }
 
     /// Register this provider with the coordinator.

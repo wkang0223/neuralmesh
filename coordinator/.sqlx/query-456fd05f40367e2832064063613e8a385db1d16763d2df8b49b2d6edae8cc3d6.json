@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE providers\n                SET total_gpu_hours_contributed = COALESCE(total_gpu_hours_contributed, 0.0) + $1\n                WHERE provider_id = $2\n                RETURNING total_gpu_hours_contributed\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "total_gpu_hours_contributed",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "456fd05f40367e2832064063613e8a385db1d16763d2df8b49b2d6edae8cc3d6"
+}
