@@ -262,8 +262,8 @@ if [[ ! -f "$CLI_CONFIG" ]]; then
     # Generate a random account ID (will be replaced with proper registration)
     ACCOUNT_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
     cat > "$CLI_CONFIG" <<EOF
-coordinator_url = "https://coord1.neuralmesh.io:8080"
-ledger_url      = "https://ledger.neuralmesh.io:8082"
+coordinator_url = "https://neuralmesh-coordinator-production-666f.up.railway.app"
+ledger_url      = "https://neuralmesh-ledger-production-9e83.up.railway.app"
 account_id      = "$ACCOUNT_ID"
 EOF
     success "Account ID: $ACCOUNT_ID"

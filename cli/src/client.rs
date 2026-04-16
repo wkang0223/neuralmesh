@@ -12,7 +12,7 @@ pub struct ClientContext {
 }
 
 impl ClientContext {
-    pub fn http() -> Client {
+    pub fn http(&self) -> Client {
         Client::builder()
             .timeout(std::time::Duration::from_secs(30))
             .build()
