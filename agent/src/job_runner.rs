@@ -47,7 +47,12 @@ pub struct JobRunner;
 
 impl JobRunner {
     /// Execute a job end-to-end. Returns when the job completes or fails.
-    pub async fn run(spec: &JobSpec, python_prefix: &str) -> Result<JobResult> {
+    pub async fn run(
+        spec: &JobSpec,
+        python_prefix: &str,
+        rest_base: &str,
+        provider_id: &str,
+    ) -> Result<JobResult> {
         let job_id = spec.job_id.to_string();
         let start  = Instant::now();
 
@@ -69,7 +74,7 @@ impl JobRunner {
         // 4a. If restoring from checkpoint — restore phase (DMTCP only)
         if let Some(ref ckpt_url) = spec.checkpoint_url {
             info!(job_id, checkpoint_url = %ckpt_url, "Restoring job from DMTCP checkpoint");
-            return Self::run_restore(spec, &work_dir, start).await;
+            return Self::run_restore(spec, &work_dir, start, rest_base, provider_id).await;
         }
 
         // 4b. Fresh start — download and extract bundle
@@ -137,7 +142,7 @@ impl JobRunner {
         }
 
         // 7. sandbox-exec path (with optional DMTCP)
-        Self::run_sandboxed(spec, &work_dir, &entry_script, python_prefix, start).await
+        Self::run_sandboxed(spec, &work_dir, &entry_script, python_prefix, start, rest_base, provider_id).await
     }
 
     /// Run the job under sandbox-exec, wrapping with DMTCP if available.
@@ -147,6 +152,8 @@ impl JobRunner {
         entry_script: &str,
         python_prefix: &str,
         start: Instant,
+        rest_base: &str,
+        provider_id: &str,
     ) -> Result<JobResult> {
         let job_id = spec.job_id.to_string();
 
@@ -171,7 +178,7 @@ impl JobRunner {
 
         let exit_code = if is_dmtcp_available() {
             info!(job_id, "DMTCP available — launching with checkpoint support");
-            Self::run_with_dmtcp(spec, work_dir, entry_script, python_bin, &sandbox).await?
+            Self::run_with_dmtcp(spec, work_dir, entry_script, python_bin, &sandbox, rest_base, provider_id).await?
         } else {
             Self::run_direct(spec, work_dir, entry_script, &python_bin, &sandbox).await?
         };
@@ -242,13 +249,19 @@ impl JobRunner {
     ) -> Result<i32> {
         let job_id = spec.job_id.to_string();
 
+        // Capture stdout + stderr to log file so the coordinator can serve them.
+        let log_path = work_dir.join("nm-output.log");
+        let log_out = std::fs::File::create(&log_path)
+            .with_context(|| format!("Creating log file at {}", log_path.display()))?;
+        let log_err = log_out.try_clone().context("Cloning log file handle")?;
+
         let mut cmd = Command::new("sandbox-exec");
         cmd.args(["-f", sandbox.profile_path.to_str().unwrap()])
             .arg(python_bin)
             .arg(entry_script)
             .current_dir(work_dir)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stdout(Stdio::from(log_out))
+            .stderr(Stdio::from(log_err))
             .env("NM_JOB_ID", &job_id)
             .env("NM_RAM_LIMIT_GB", spec.min_ram_gb.to_string())
             .env("PYTORCH_MPS_HIGH_WATERMARK_RATIO", "0.0");
@@ -272,6 +285,8 @@ impl JobRunner {
         entry_script: &str,
         python_bin: String,
         sandbox: &SandboxProfile,
+        rest_base: &str,
+        provider_id: &str,
     ) -> Result<i32> {
         let job_id = spec.job_id.to_string();
 
@@ -284,6 +299,9 @@ impl JobRunner {
             ev.extend(spec.env_vars.clone());
             ev
         };
+
+        // Log file — stdout + stderr of the sandboxed job go here.
+        let log_path = work_dir.join("nm-output.log");
 
         // Launch sandbox-exec wrapped in dmtcp_launch
         let sandbox_args: Vec<&str> = vec![
@@ -299,15 +317,18 @@ impl JobRunner {
             &sandbox_args,
             work_dir,
             &env_vars,
+            Some(&log_path),
         )?;
 
-        // Spawn checkpoint ticker
+        // Spawn checkpoint ticker — reports each snapshot to the coordinator.
         let ckpt_dir = PathBuf::from(CHECKPOINT_DIR).join(&job_id);
         let ticker = spawn_checkpoint_ticker(
             job_id.clone(),
             session.coord_port,
             ckpt_dir,
             CHECKPOINT_INTERVAL_SECS,
+            rest_base.to_string(),
+            provider_id.to_string(),
         );
 
         // Wait for process
@@ -324,6 +345,8 @@ impl JobRunner {
         spec: &JobSpec,
         work_dir: &PathBuf,
         start: Instant,
+        rest_base: &str,
+        provider_id: &str,
     ) -> Result<JobResult> {
         let job_id = spec.job_id.to_string();
 
@@ -334,9 +357,11 @@ impl JobRunner {
             );
         }
 
-        // Load checkpoint metadata (must be pre-fetched from coordinator)
-        let meta = CheckpointMeta::load(&job_id)
-            .context("Checkpoint metadata not found — ensure checkpoint was downloaded")?;
+        // Fetch checkpoint metadata from coordinator — the canonical source of truth.
+        // This works even when restoring on a different provider than the one that saved it.
+        let meta = fetch_checkpoint_meta(rest_base, &job_id)
+            .await
+            .context("Could not fetch checkpoint metadata from coordinator")?;
 
         info!(
             job_id,
@@ -345,15 +370,20 @@ impl JobRunner {
             "Restoring job from DMTCP checkpoint"
         );
 
-        let mut child = DmtcpSession::restore(&meta, work_dir)?;
+        // Log file — restored job output goes here too.
+        let log_path = work_dir.join("nm-output.log");
 
-        // Spawn a new checkpoint ticker for the restored session
+        let (mut child, effective_port) = DmtcpSession::restore(&meta, work_dir, Some(&log_path))?;
+
+        // Spawn a fresh checkpoint ticker for the restored session.
         let ckpt_dir = PathBuf::from(CHECKPOINT_DIR).join(&job_id);
         let ticker = spawn_checkpoint_ticker(
             job_id.clone(),
-            meta.coord_port,
+            effective_port,
             ckpt_dir,
             CHECKPOINT_INTERVAL_SECS,
+            rest_base.to_string(),
+            provider_id.to_string(),
         );
 
         let status = tokio::task::spawn_blocking(move || child.wait()).await??;
@@ -366,12 +396,14 @@ impl JobRunner {
             DmtcpSession::cleanup(&job_id);
         }
 
-        info!(
-            job_id,
-            exit_code,
-            runtime_s = actual_runtime_s,
-            "Restored job completed"
-        );
+        // Compute output hash from accumulated log.
+        let mut hasher = Sha256::new();
+        if log_path.exists() {
+            hasher.update(std::fs::read(&log_path).unwrap_or_default());
+        }
+        let output_hash = hex::encode(hasher.finalize());
+
+        info!(job_id, exit_code, runtime_s = actual_runtime_s, "Restored job completed");
 
         if exit_code != 0 {
             anyhow::bail!("Restored job exited with code {}", exit_code);
@@ -380,12 +412,38 @@ impl JobRunner {
         Ok(JobResult {
             job_id: spec.job_id,
             exit_code,
-            output_hash: String::new(), // no log file for restored jobs yet
+            output_hash,
             actual_runtime_s,
             avg_gpu_util_pct: 0.0,
             peak_ram_gb: spec.min_ram_gb,
         })
     }
+}
+
+// ── Checkpoint metadata fetch ────────────────────────────────────────────────
+
+/// Fetch the latest checkpoint metadata for `job_id` from the coordinator.
+/// This replaces the old `CheckpointMeta::load()` which read from local disk —
+/// that broke cross-provider restore because the files lived on Provider A.
+async fn fetch_checkpoint_meta(rest_base: &str, job_id: &str) -> Result<crate::checkpoint::CheckpointMeta> {
+    let url = format!("{}/api/v1/jobs/{}/checkpoint", rest_base, job_id);
+    let resp = reqwest::Client::new()
+        .get(&url)
+        .send()
+        .await
+        .context("GET checkpoint metadata from coordinator")?;
+
+    if !resp.status().is_success() {
+        anyhow::bail!(
+            "Coordinator returned {} for checkpoint metadata of job {}",
+            resp.status(),
+            job_id
+        );
+    }
+
+    resp.json::<crate::checkpoint::CheckpointMeta>()
+        .await
+        .context("Parsing checkpoint metadata JSON")
 }
 
 // ── Download + verify ────────────────────────────────────────────────────────

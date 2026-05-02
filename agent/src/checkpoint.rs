@@ -20,6 +20,23 @@ use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 use tracing::{info, warn};
 
+/// Open stdout + stderr Stdio handles.
+/// If `log_path` is given, both streams go to that file (appended).
+/// Otherwise both are discarded (Stdio::null).
+fn open_log_stdio(log_path: Option<&Path>) -> Result<(Stdio, Stdio)> {
+    if let Some(path) = log_path {
+        let f = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+            .with_context(|| format!("Creating job log file at {}", path.display()))?;
+        let f2 = f.try_clone().context("Cloning log file handle")?;
+        Ok((Stdio::from(f), Stdio::from(f2)))
+    } else {
+        Ok((Stdio::null(), Stdio::null()))
+    }
+}
+
 /// Directory for checkpoint files and metadata.
 pub const CHECKPOINT_DIR: &str = "/var/neuralmesh/checkpoints";
 
@@ -105,6 +122,13 @@ pub struct DmtcpSession {
 }
 
 impl DmtcpSession {
+    /// Derive a stable coordinator port from the job_id hash.
+    /// Used by both launch and restore so the port is consistent.
+    pub fn derive_port(job_id: &str) -> u16 {
+        let hash = job_id.bytes().fold(0u16, |acc, b| acc.wrapping_add(b as u16));
+        7780 + (hash % 200)
+    }
+
     /// Launch a new DMTCP session wrapping `cmd args`.
     ///
     /// Returns `(session_handle, child_process)`. The caller is responsible
@@ -115,10 +139,10 @@ impl DmtcpSession {
         args: &[&str],
         work_dir: &Path,
         env_vars: &[(String, String)],
+        log_path: Option<&Path>,
     ) -> Result<(Self, Child)> {
         // Assign a deterministic-ish port from the job ID's hash to avoid conflicts
-        let port_hash = job_id.bytes().fold(0u16, |acc, b| acc.wrapping_add(b as u16));
-        let coord_port = 7780 + (port_hash % 200);
+        let coord_port = Self::derive_port(job_id);
 
         let ckpt_dir = PathBuf::from(CHECKPOINT_DIR).join(job_id);
         std::fs::create_dir_all(&ckpt_dir)?;
@@ -136,10 +160,11 @@ impl DmtcpSession {
             ])
             .args(args)
             .current_dir(work_dir)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
             .env("NM_JOB_ID", job_id)
             .env("DMTCP_CKPT_DIR", ckpt_dir.to_str().unwrap());
+
+        let (stdout, stderr) = open_log_stdio(log_path)?;
+        cmd_builder.stdout(stdout).stderr(stderr);
 
         for (k, v) in env_vars {
             cmd_builder.env(k, v);
@@ -217,7 +242,18 @@ impl DmtcpSession {
     ///
     /// Finds .dmtcp files from the checkpoint metadata and launches
     /// `dmtcp_restart` to resume the process state.
-    pub fn restore(meta: &CheckpointMeta, work_dir: &Path) -> Result<Child> {
+    /// Restore a previously checkpointed job.
+    /// Returns `(child_process, effective_coord_port)`.
+    /// The effective_coord_port must be passed to `spawn_checkpoint_ticker`.
+    pub fn restore(meta: &CheckpointMeta, work_dir: &Path, log_path: Option<&Path>) -> Result<(Child, u16)> {
+        // coord_port may be 0 when metadata was fetched from the coordinator
+        // (which doesn't store it). Derive a consistent port from job_id.
+        let coord_port = if meta.coord_port > 0 {
+            meta.coord_port
+        } else {
+            Self::derive_port(&meta.job_id)
+        };
+
         let ckpt_dir = PathBuf::from(&meta.checkpoint_dir);
 
         if meta.dmtcp_files.is_empty() {
@@ -254,10 +290,11 @@ impl DmtcpSession {
 
         let mut cmd = Command::new("dmtcp_restart");
         cmd.arg("--new-coordinator")
-            .args(["--coord-port", &meta.coord_port.to_string()])
-            .current_dir(work_dir)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
+            .args(["--coord-port", &coord_port.to_string()])
+            .current_dir(work_dir);
+
+        let (stdout, stderr) = open_log_stdio(log_path)?;
+        cmd.stdout(stdout).stderr(stderr);
 
         for f in &found {
             cmd.arg(f);
@@ -267,9 +304,10 @@ impl DmtcpSession {
         info!(
             job_id = %meta.job_id,
             pid = child.id(),
+            coord_port,
             "DMTCP restore process started"
         );
-        Ok(child)
+        Ok((child, coord_port))
     }
 
     /// Remove checkpoint files for `job_id` once the job is fully complete.
@@ -286,13 +324,15 @@ impl DmtcpSession {
 }
 
 /// Spawn a background task that triggers a DMTCP checkpoint every
-/// `interval_secs` seconds. Returns a `JoinHandle` — call `abort()` when
-/// the job completes normally.
+/// `interval_secs` seconds and reports each snapshot to the coordinator.
+/// Returns a `JoinHandle` — call `abort()` when the job completes normally.
 pub fn spawn_checkpoint_ticker(
     job_id: String,
     coord_port: u16,
     checkpoint_dir: PathBuf,
     interval_secs: u64,
+    rest_base: String,
+    provider_id: String,
 ) -> tokio::task::JoinHandle<()> {
     tokio::spawn(async move {
         let mut tick = tokio::time::interval(Duration::from_secs(interval_secs));
@@ -315,7 +355,6 @@ pub fn spawn_checkpoint_ticker(
 
             match status {
                 Ok(Ok(s)) if s.success() => {
-                    // Gather .dmtcp files
                     let dmtcp_files = CheckpointMeta::collect_dmtcp_files(&checkpoint_dir);
                     let meta = CheckpointMeta {
                         job_id:         job_id.clone(),
@@ -329,6 +368,22 @@ pub fn spawn_checkpoint_ticker(
                         warn!(job_id, error = %e, "Could not save checkpoint metadata");
                     } else {
                         info!(job_id, iteration, "Periodic checkpoint saved");
+                        // Report to coordinator so it can re-queue on provider disconnect
+                        if let Err(e) = report_checkpoint_to_coordinator(
+                            &rest_base,
+                            &provider_id,
+                            &job_id,
+                            &meta,
+                        )
+                        .await
+                        {
+                            warn!(
+                                job_id,
+                                iteration,
+                                error = %e,
+                                "Could not report checkpoint to coordinator (non-fatal)"
+                            );
+                        }
                     }
                 }
                 other => {

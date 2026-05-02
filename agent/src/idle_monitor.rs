@@ -88,10 +88,13 @@ impl IdleMonitor {
                         let python_prefix = best_python_prefix();
 
                         tokio::spawn(async move {
-                            // Spawn a background task that sends job heartbeats every 30s
+                            let rest_base   = coord.rest_base();
+                            let job_id_str  = job_clone.job_id.to_string();
+
+                            // Heartbeat task — keeps coordinator informed while job runs.
                             let hb_coord  = coord.clone();
                             let hb_pid    = provider_id.clone();
-                            let hb_job_id = job_clone.job_id.to_string();
+                            let hb_job_id = job_id_str.clone();
                             let heartbeat_task = tokio::spawn(async move {
                                 let mut tick = tokio::time::interval(
                                     tokio::time::Duration::from_secs(30)
@@ -116,18 +119,21 @@ impl IdleMonitor {
                                 }
                             });
 
-                            match JobRunner::run(&job_clone, &python_prefix).await {
+                            match JobRunner::run(&job_clone, &python_prefix, &rest_base, &provider_id).await {
                                 Ok(result) => {
                                     heartbeat_task.abort();
+                                    // Push accumulated stdout/stderr to coordinator before reporting.
+                                    push_final_log(&rest_base, &result.job_id.to_string()).await;
                                     report_completion(&coord, &provider_id, result).await;
                                 }
                                 Err(e) => {
                                     heartbeat_task.abort();
                                     error!(error = %e, "Job execution failed");
+                                    push_final_log(&rest_base, &job_id_str).await;
                                     report_failure(
                                         &coord,
                                         &provider_id,
-                                        &job_clone.job_id.to_string(),
+                                        &job_id_str,
                                         &format!("{}", e),
                                         true, // provider fault
                                     ).await;
@@ -392,4 +398,30 @@ fn best_python_prefix() -> String {
         }
     }
     "/opt/homebrew".to_string()
+}
+
+/// Read the job's stdout/stderr log from disk and POST it to the coordinator
+/// so consumers can retrieve it via GET /api/v1/jobs/:id/logs.
+/// Called once after job completion (success or failure).
+async fn push_final_log(rest_base: &str, job_id: &str) {
+    let log_path = format!("/tmp/neuralmesh/{}/nm-output.log", job_id);
+    let output = match std::fs::read_to_string(&log_path) {
+        Ok(s) if !s.is_empty() => s,
+        _ => return, // nothing to push
+    };
+
+    let url  = format!("{}/api/v1/jobs/{}/logs", rest_base, job_id);
+    let body = serde_json::json!({ "output": output });
+
+    match reqwest::Client::new().post(&url).json(&body).send().await {
+        Ok(r) if r.status().is_success() => {
+            info!(job_id, bytes = output.len(), "Job log pushed to coordinator");
+        }
+        Ok(r) => {
+            warn!(job_id, status = %r.status(), "Coordinator rejected job log push");
+        }
+        Err(e) => {
+            warn!(job_id, error = %e, "Failed to push job log to coordinator");
+        }
+    }
 }

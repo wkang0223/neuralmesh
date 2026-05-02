@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE jobs\n        SET output_log = COALESCE(output_log, '') || $1\n        WHERE job_id = $2\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "34b92ebc4938b4456dd7a4d4c608622615ed4963a40d7a32160f469680f49536"
+}

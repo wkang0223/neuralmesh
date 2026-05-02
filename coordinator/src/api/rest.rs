@@ -24,7 +24,7 @@ pub fn build_router(state: AppState) -> Router {
         // ── Jobs (consumer-facing) ────────────────────────────────────────
         .route("/api/v1/jobs",               get(list_jobs_rest).post(submit_job))
         .route("/api/v1/jobs/:id",           get(get_job).delete(cancel_job))
-        .route("/api/v1/jobs/:id/logs",      get(get_job_logs))
+        .route("/api/v1/jobs/:id/logs",      get(get_job_logs).post(append_job_log))
         // ── Device-locked account endpoints ──────────────────────────────
         .route("/api/v1/account/register",      post(register_account))
         .route("/api/v1/account/:id",           get(get_account))
@@ -40,7 +40,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/api/v1/provider/:id/job",      get(get_assigned_job))
         .route("/api/v1/jobs/:id/complete",     post(complete_job))
         .route("/api/v1/jobs/:id/fail",         post(fail_job))
-        .route("/api/v1/jobs/:id/checkpoint",   post(save_checkpoint))
+        .route("/api/v1/jobs/:id/checkpoint",   get(get_checkpoint).post(save_checkpoint))
         .route("/api/v1/jobs/:id/heartbeat",    post(job_heartbeat))
         // ── Withdraw ──────────────────────────────────────────────────────
         .route("/api/v1/withdraw",              post(withdraw))
@@ -475,9 +475,9 @@ async fn cancel_job(
     Ok(Json(serde_json::json!({ "ok": true, "job_id": job_id, "state": "cancelled" })))
 }
 
-/// GET /api/v1/jobs/:id/logs — stream job stdout from the log file.
-/// Phase 1: reads nm-output.log from /tmp/neuralmesh/<job_id>/.
-/// Returns { job_id, output, is_complete, offset }.
+/// GET /api/v1/jobs/:id/logs
+/// Returns accumulated job output stored in the DB (pushed by the agent).
+/// Supports `?offset=N` for incremental polling.
 #[derive(Deserialize)]
 struct LogsQuery {
     offset: Option<usize>,
@@ -490,9 +490,8 @@ async fn get_job_logs(
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let offset = q.offset.unwrap_or(0);
 
-    // Check job state
     let job = sqlx::query!(
-        "SELECT state FROM jobs WHERE job_id = $1",
+        "SELECT state, output_log FROM jobs WHERE job_id = $1",
         job_id,
     )
     .fetch_optional(&state.db)
@@ -505,11 +504,11 @@ async fn get_job_logs(
         Some("complete") | Some("failed") | Some("cancelled")
     );
 
-    // Try to read log file (only available on same machine as provider — Phase 1)
-    let log_path = format!("/tmp/neuralmesh/{}/nm-output.log", job_id);
-    let output = match std::fs::read_to_string(&log_path) {
-        Ok(content) if content.len() > offset => content[offset..].to_string(),
-        _ => String::new(),
+    let full_log = job.output_log.unwrap_or_default();
+    let output = if full_log.len() > offset {
+        full_log[offset..].to_string()
+    } else {
+        String::new()
     };
 
     Ok(Json(serde_json::json!({
@@ -517,6 +516,45 @@ async fn get_job_logs(
         "output":      output,
         "is_complete": is_complete,
         "offset":      offset + output.len(),
+    })))
+}
+
+/// POST /api/v1/jobs/:id/logs
+/// Called by the agent after job completion to push accumulated stdout/stderr.
+/// The body is `{ "output": "<log text>" }`.
+#[derive(Deserialize)]
+struct LogAppendBody {
+    output: String,
+}
+
+async fn append_job_log(
+    State(state): State<AppState>,
+    Path(job_id): Path<String>,
+    Json(body): Json<LogAppendBody>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    if body.output.is_empty() {
+        return Ok(Json(serde_json::json!({ "ok": true, "appended": 0 })));
+    }
+
+    sqlx::query!(
+        r#"
+        UPDATE jobs
+        SET output_log = COALESCE(output_log, '') || $1
+        WHERE job_id = $2
+        "#,
+        body.output,
+        job_id,
+    )
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        warn!(job_id, error = %e, "Failed to append job log");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(Json(serde_json::json!({
+        "ok":      true,
+        "appended": body.output.len(),
     })))
 }
 
@@ -1479,6 +1517,40 @@ async fn save_checkpoint(
 }
 
 /// POST /api/v1/jobs/:id/heartbeat
+/// GET /api/v1/jobs/:id/checkpoint
+/// Returns the latest checkpoint metadata stored for this job.
+/// Called by the agent on the *restore* side to fetch checkpoint info
+/// without needing access to the original provider's local filesystem.
+async fn get_checkpoint(
+    State(state): State<AppState>,
+    Path(job_id): Path<String>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let row = sqlx::query!(
+        r#"
+        SELECT checkpoint_id, provider_id, iteration, checkpoint_dir,
+               dmtcp_files, elapsed_secs
+        FROM job_checkpoints
+        WHERE job_id = $1
+        ORDER BY iteration DESC
+        LIMIT 1
+        "#,
+        job_id,
+    )
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    .ok_or(StatusCode::NOT_FOUND)?;
+
+    Ok(Json(serde_json::json!({
+        "job_id":         job_id,
+        "iteration":      row.iteration,
+        "checkpoint_dir": row.checkpoint_dir,
+        "dmtcp_files":    row.dmtcp_files,
+        "elapsed_secs":   row.elapsed_secs,
+        "coord_port":     0,   // coord_port not stored in DB; restore uses a fresh coordinator
+    })))
+}
+
 /// Provider sends periodic job progress heartbeat (separate from provider heartbeat).
 /// Updates last_heartbeat on the job row so the heartbeat watcher knows the
 /// job is still alive.

@@ -1,11 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT state FROM jobs WHERE job_id = $1",
+  "query": "SELECT state, output_log FROM jobs WHERE job_id = $1",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
         "name": "state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "output_log",
         "type_info": "Text"
       }
     ],
@@ -15,8 +20,9 @@
       ]
     },
     "nullable": [
+      true,
       true
     ]
   },
-  "hash": "d9286e759aeb35c833befc64252c7cc39e05616e58807d5b9d4d7e03cf1367e0"
+  "hash": "23640074cb4410093e5015949df396e8277e18f929d7a9312b4e8e7be5c91099"
 }
