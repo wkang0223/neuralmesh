@@ -268,6 +268,9 @@ struct SubmitJobBody {
     max_price_per_hour: f64,
     bundle_hash:       Option<String>,
     bundle_url:        Option<String>,
+    /// Entry-point filename inside the bundle (e.g. "inference.py").
+    /// Agent uses this to find the right file instead of heuristic scanning.
+    script_name:       Option<String>,
     /// Caller's preferred region — optional
     preferred_region:  Option<String>,
     /// Environment variables passed to the job (coordinator validates keys)
@@ -320,8 +323,8 @@ async fn submit_job(
         r#"
         INSERT INTO jobs (
             job_id, consumer_id, runtime, min_ram_gb, max_duration_s,
-            max_price_per_hour, bundle_hash, bundle_url, preferred_region, state
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'queued')
+            max_price_per_hour, bundle_hash, bundle_url, script_name, preferred_region, state
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'queued')
         "#,
         job_id,
         body.account_id,
@@ -331,6 +334,7 @@ async fn submit_job(
         body.max_price_per_hour,
         body.bundle_hash,
         body.bundle_url,
+        body.script_name,
         body.preferred_region,
     )
     .execute(&state.db)
@@ -1050,7 +1054,7 @@ async fn get_assigned_job(
     let job = sqlx::query!(
         r#"
         SELECT job_id, consumer_id, runtime, min_ram_gb, max_duration_s,
-               max_price_per_hour, bundle_hash, bundle_url,
+               max_price_per_hour, bundle_hash, bundle_url, script_name,
                consumer_ssh_pubkey, consumer_wg_pubkey, preferred_region
         FROM jobs
         WHERE provider_id = $1 AND state = 'assigned'
@@ -1084,6 +1088,7 @@ async fn get_assigned_job(
                     "max_price_per_hour": j.max_price_per_hour,
                     "bundle_hash":        j.bundle_hash,
                     "bundle_url":         j.bundle_url,
+                    "script_name":        j.script_name,
                     "consumer_ssh_pubkey":j.consumer_ssh_pubkey,
                     "consumer_wg_pubkey": j.consumer_wg_pubkey,
                     "preferred_region":   j.preferred_region,

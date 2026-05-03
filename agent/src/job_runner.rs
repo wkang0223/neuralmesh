@@ -85,9 +85,20 @@ impl JobRunner {
         extract_bundle(&bundle_path, &work_dir)?;
         let _ = std::fs::remove_file(&bundle_path);
 
-        // 5. Find entry script
-        let entry_script = find_entry_script(&work_dir, &spec.runtime)
-            .context("No runnable entry script found in bundle")?;
+        // 5. Find entry script — prefer coordinator-supplied name; fall back to heuristic scan
+        let entry_script = if let Some(ref name) = spec.script_name {
+            let explicit = work_dir.join(name);
+            if explicit.exists() {
+                explicit.to_string_lossy().to_string()
+            } else {
+                warn!(job_id, script_name = %name, "Coordinator-specified script not found; scanning bundle");
+                find_entry_script(&work_dir, &spec.runtime)
+                    .context("No runnable entry script found in bundle")?
+            }
+        } else {
+            find_entry_script(&work_dir, &spec.runtime)
+                .context("No runnable entry script found in bundle")?
+        };
         info!(job_id, script = %entry_script, "Entry script resolved");
 
         // 6. Try VM execution path (macOS 13+ with nm-vm-helper)

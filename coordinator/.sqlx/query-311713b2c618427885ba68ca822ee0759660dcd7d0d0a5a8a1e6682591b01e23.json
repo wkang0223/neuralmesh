@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT job_id, consumer_id, runtime, min_ram_gb, max_duration_s,\n               max_price_per_hour, bundle_hash, bundle_url,\n               consumer_ssh_pubkey, consumer_wg_pubkey, preferred_region\n        FROM jobs\n        WHERE provider_id = $1 AND state = 'assigned'\n        ORDER BY started_at ASC\n        LIMIT 1\n        ",
+  "query": "\n        SELECT job_id, consumer_id, runtime, min_ram_gb, max_duration_s,\n               max_price_per_hour, bundle_hash, bundle_url, script_name,\n               consumer_ssh_pubkey, consumer_wg_pubkey, preferred_region\n        FROM jobs\n        WHERE provider_id = $1 AND state = 'assigned'\n        ORDER BY started_at ASC\n        LIMIT 1\n        ",
   "describe": {
     "columns": [
       {
@@ -45,16 +45,21 @@
       },
       {
         "ordinal": 8,
-        "name": "consumer_ssh_pubkey",
+        "name": "script_name",
         "type_info": "Text"
       },
       {
         "ordinal": 9,
-        "name": "consumer_wg_pubkey",
+        "name": "consumer_ssh_pubkey",
         "type_info": "Text"
       },
       {
         "ordinal": 10,
+        "name": "consumer_wg_pubkey",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
         "name": "preferred_region",
         "type_info": "Text"
       }
@@ -75,8 +80,9 @@
       true,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "a7d4ee68d82878c9f4ba2e6e008557fa521737a7a0f2ec34c94e62739842e1df"
+  "hash": "311713b2c618427885ba68ca822ee0759660dcd7d0d0a5a8a1e6682591b01e23"
 }

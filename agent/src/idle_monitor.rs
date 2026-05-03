@@ -270,6 +270,7 @@ impl IdleMonitor {
             max_price_per_hour: job["max_price_per_hour"].as_f64().unwrap_or(0.1),
             bundle_hash: job["bundle_hash"].as_str().unwrap_or_default().to_string(),
             bundle_url: job["bundle_url"].as_str().unwrap_or_default().to_string(),
+            script_name: job["script_name"].as_str().map(|s| s.to_string()),
             consumer_ssh_pubkey: job["consumer_ssh_pubkey"].as_str().unwrap_or_default().to_string(),
             consumer_wg_pubkey: job["consumer_wg_pubkey"].as_str().unwrap_or_default().to_string(),
             preferred_region: job["preferred_region"].as_str().map(|s| s.to_string()),
@@ -292,6 +293,9 @@ pub struct JobSpec {
     pub max_price_per_hour: f64,
     pub bundle_hash: String,
     pub bundle_url: String,
+    /// Entry-point filename inside the bundle (e.g. "inference.py").
+    /// When set, the agent skips heuristic scanning and runs this file directly.
+    pub script_name: Option<String>,
     pub consumer_ssh_pubkey: String,
     pub consumer_wg_pubkey: String,
     pub preferred_region: Option<String>,
