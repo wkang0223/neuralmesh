@@ -50,6 +50,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Register this machine and manage your Hatch identity
+    Account {
+        #[command(subcommand)]
+        action: commands::account::AccountCmd,
+    },
     /// Manage this machine as a GPU provider
     Provider {
         #[command(subcommand)]
@@ -99,6 +104,9 @@ async fn main() -> Result<()> {
     };
 
     match cli.command {
+        Commands::Account { action } => {
+            commands::account::run(action, &ctx).await?
+        }
         Commands::Provider { action } => {
             commands::provider::run(action, &ctx).await?
         }
