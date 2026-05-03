@@ -280,7 +280,7 @@ struct SubmitJobBody {
 async fn submit_job(
     State(state): State<AppState>,
     Json(body): Json<SubmitJobBody>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
     use tracing::warn;
 
     // Validate account exists and has enough balance
@@ -290,20 +290,27 @@ async fn submit_job(
     )
     .fetch_optional(&state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(serde_json::json!({"error": "db_error"})),
+    ))?;
 
     let available = credit.map(|c| c.available_nmc.unwrap_or(0.0)).unwrap_or(0.0);
     let max_cost = body.max_price_per_hour * (body.max_duration_secs as f64 / 3600.0);
 
     if available < max_cost {
-        return Ok(Json(serde_json::json!({
-            "ok": false,
-            "error": "insufficient_balance",
-            "message": format!(
-                "Need {:.4} NMC escrow, only {:.4} available",
-                max_cost, available
-            ),
-        })));
+        return Err((
+            StatusCode::PAYMENT_REQUIRED,
+            Json(serde_json::json!({
+                "ok": false,
+                "error": "insufficient_balance",
+                "message": format!(
+                    "Need {:.4} HC escrow for max job cost, only {:.4} available. \
+                     Run `hatch wallet deposit` to add credits.",
+                    max_cost, available
+                ),
+            })),
+        ));
     }
 
     // Map runtime string to integer enum (matches nm_common::Runtime)
@@ -341,7 +348,7 @@ async fn submit_job(
     .await
     .map_err(|e| {
         warn!(error = %e, "Failed to insert job");
-        StatusCode::INTERNAL_SERVER_ERROR
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": "db_error"})))
     })?;
 
     // Lock escrow (max possible cost)
@@ -358,7 +365,7 @@ async fn submit_job(
     )
     .execute(&state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": "db_error"}))))?;
 
     // Record escrow
     let escrow_id = Uuid::new_v4().to_string();
@@ -374,7 +381,7 @@ async fn submit_job(
     )
     .execute(&state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": "db_error"}))))?;
 
     let tx_id = Uuid::new_v4().to_string();
     sqlx::query!(
@@ -389,7 +396,7 @@ async fn submit_job(
     )
     .execute(&state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": "db_error"}))))?;
 
     info!(
         job_id = %job_id,

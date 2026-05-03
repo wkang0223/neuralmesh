@@ -213,8 +213,14 @@ async fn submit(
         .context("Failed to submit job")?;
 
     if !resp.status().is_success() {
-        let err = resp.text().await.unwrap_or_default();
-        anyhow::bail!("Job submission failed: {}", err);
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        // Try to extract a human-friendly message from JSON error response
+        let msg = serde_json::from_str::<serde_json::Value>(&body)
+            .ok()
+            .and_then(|v| v["message"].as_str().map(|s| s.to_string()))
+            .unwrap_or(body);
+        anyhow::bail!("Job submission failed (HTTP {}): {}", status.as_u16(), msg);
     }
 
     let result: JobSubmitResponse = resp.json().await.context("Invalid submit response")?;
