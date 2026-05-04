@@ -37,13 +37,21 @@ impl CoordinatorClient {
     }
 
     async fn try_connect(endpoint_str: &str) -> Result<Self> {
-        let endpoint = Endpoint::from_shared(endpoint_str.to_string())
+        let mut builder = Endpoint::from_shared(endpoint_str.to_string())
             .context("Invalid coordinator endpoint")?
             .connect_timeout(Duration::from_secs(10))
             .timeout(Duration::from_secs(30))
             .keep_alive_while_idle(true);
 
-        let channel = endpoint.connect().await
+        // Enable TLS for https:// endpoints
+        if endpoint_str.starts_with("https://") {
+            let tls = tonic::transport::ClientTlsConfig::new()
+                .with_native_roots();
+            builder = builder.tls_config(tls)
+                .context("TLS config error")?;
+        }
+
+        let channel = builder.connect().await
             .with_context(|| format!("Connecting to {}", endpoint_str))?;
 
         info!(endpoint = endpoint_str, "Connected to coordinator");
@@ -68,9 +76,9 @@ impl CoordinatorClient {
             .replace(":9090", ":8080")
     }
 
-    /// Register this provider with the coordinator.
+    /// Register this provider with the coordinator and persist the provider_id.
     pub async fn register(
-        &self,
+        &mut self,
         keypair: &NmKeypair,
         chip: &MacChipInfo,
         cfg: &AgentConfig,
@@ -119,7 +127,9 @@ impl CoordinatorClient {
             anyhow::bail!("Registration rejected: {}", response.message);
         }
 
-        info!(provider_id = %keypair.public_key_hex(), "Provider registered successfully");
+        // Persist provider_id so poll_for_job and heartbeats can use it
+        self.provider_id = keypair.public_key_hex();
+        info!(provider_id = %self.provider_id, "Provider registered successfully");
         Ok(response.assigned_relay)
     }
 

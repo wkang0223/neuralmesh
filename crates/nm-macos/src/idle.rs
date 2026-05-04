@@ -73,8 +73,10 @@ impl IdleDetector {
         }
 
         let gpu_idle    = self.is_gpu_idle();
-        let screen_locked = is_screen_locked();
-        let user_idle   = gpu_idle && screen_locked;
+        // NM_FORCE_AVAILABLE=1 skips screen-lock check (dev/testing only)
+        let force       = std::env::var("NM_FORCE_AVAILABLE").map(|v| v == "1").unwrap_or(false);
+        let screen_locked = force || is_screen_locked();
+        let user_idle   = gpu_idle || force;  // force bypasses screen+GPU check
 
         debug!(
             gpu_idle,

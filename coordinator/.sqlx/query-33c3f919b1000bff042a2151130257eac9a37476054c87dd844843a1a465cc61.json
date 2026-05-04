@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO artifacts (hash, bundle_gz) VALUES ($1, $2) ON CONFLICT (hash) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "33c3f919b1000bff042a2151130257eac9a37476054c87dd844843a1a465cc61"
+}

@@ -1729,16 +1729,16 @@ async fn withdraw(
 //
 // POST /api/v1/artifacts
 //   Accepts: multipart/form-data
-//     Field "bundle_hash" — hex hash (used as directory name for dedup)
+//     Field "bundle_hash" — hex hash (dedup key)
 //     File fields          — the script file(s) to pack
-//   Stores all files at /var/neuralmesh/artifacts/{hash}/
-//   Tars them into bundle.tar.gz in the same directory.
+//   Packs files into a tar.gz in-memory and stores in the artifacts table.
 //   Returns: { "url": "<public_url>/api/v1/artifacts/{hash}" }
 //
 // GET /api/v1/artifacts/:hash
-//   Serves the bundle.tar.gz for the given hash.
-
-const ARTIFACT_DIR: &str = "/var/neuralmesh/artifacts";
+//   Streams the bundle.tar.gz from the artifacts table.
+//
+// NOTE: Artifacts are stored in PostgreSQL (not the container filesystem) so
+// they survive Railway redeployments.
 
 async fn upload_artifact(
     State(state): State<AppState>,
@@ -1764,39 +1764,32 @@ async fn upload_artifact(
         }
     }
 
-    if bundle_hash.is_empty() {
-        return Err(StatusCode::BAD_REQUEST);
-    }
-    if files.is_empty() {
+    if bundle_hash.is_empty() || files.is_empty() {
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    // Sanitise hash: allow only hex chars to prevent path traversal
+    // Sanitise hash — only hex digits allowed
     if !bundle_hash.chars().all(|c| c.is_ascii_hexdigit()) {
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    let artifact_dir = std::path::PathBuf::from(ARTIFACT_DIR).join(&bundle_hash);
-    std::fs::create_dir_all(&artifact_dir).map_err(|e| {
-        warn!(error = %e, "Failed to create artifact dir");
+    // Build tar.gz in-memory using a temp directory + tar command
+    let tmp_dir = tempfile::tempdir().map_err(|e| {
+        warn!(error = %e, "Failed to create tmpdir");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-
-    // Write individual files
     for (name, data) in &files {
-        // Sanitise filename
         let safe_name = std::path::Path::new(name)
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("file");
-        std::fs::write(artifact_dir.join(safe_name), data).map_err(|e| {
-            warn!(error = %e, "Failed to write artifact file");
+        std::fs::write(tmp_dir.path().join(safe_name), data).map_err(|e| {
+            warn!(error = %e, "Failed to write tmp file");
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
     }
 
-    // Pack into bundle.tar.gz using the `tar` command
-    let bundle_path = artifact_dir.join("bundle.tar.gz");
+    let bundle_path = tmp_dir.path().join("bundle.tar.gz");
     let file_args: Vec<String> = files
         .iter()
         .map(|(n, _)| {
@@ -1812,53 +1805,67 @@ async fn upload_artifact(
         .arg("-czf")
         .arg(&bundle_path)
         .args(&file_args)
-        .current_dir(&artifact_dir)
+        .current_dir(tmp_dir.path())
         .status()
-        .map_err(|e| {
-            warn!(error = %e, "tar spawn failed");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+        .map_err(|e| { warn!(error = %e, "tar spawn failed"); StatusCode::INTERNAL_SERVER_ERROR })?;
 
     if !status.success() {
-        warn!(hash = %bundle_hash, "tar failed creating bundle.tar.gz");
+        warn!(hash = %bundle_hash, "tar failed");
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     }
 
+    let bundle_gz = std::fs::read(&bundle_path).map_err(|e| {
+        warn!(error = %e, "Failed to read tar.gz");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    // Upsert into artifacts table (idempotent — same hash = same content)
+    sqlx::query!(
+        "INSERT INTO artifacts (hash, bundle_gz) VALUES ($1, $2) ON CONFLICT (hash) DO NOTHING",
+        bundle_hash,
+        bundle_gz,
+    )
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        warn!(error = %e, "DB artifact insert failed");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
     let base = if state.public_url.is_empty() {
-        // Fallback: relative path only (useful in local dev)
         String::new()
     } else {
         state.public_url.trim_end_matches('/').to_string()
     };
 
     let url = format!("{}/api/v1/artifacts/{}", base, bundle_hash);
-
-    info!(hash = %bundle_hash, files = files.len(), "Artifact bundle stored");
+    info!(hash = %bundle_hash, files = files.len(), size_bytes = bundle_gz.len(), "Artifact stored in DB");
     Ok(Json(serde_json::json!({ "url": url, "bundle_hash": bundle_hash })))
 }
 
 async fn download_artifact(
+    State(state): State<AppState>,
     Path(hash): Path<String>,
 ) -> Result<Response<Body>, StatusCode> {
-    // Sanitise
     if !hash.chars().all(|c| c.is_ascii_hexdigit()) {
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    let bundle_path = std::path::PathBuf::from(ARTIFACT_DIR)
-        .join(&hash)
-        .join("bundle.tar.gz");
-
-    if !bundle_path.exists() {
-        return Err(StatusCode::NOT_FOUND);
-    }
-
-    let data = std::fs::read(&bundle_path).map_err(|e| {
-        warn!(error = %e, hash = %hash, "Failed to read artifact bundle");
+    let row = sqlx::query!(
+        "SELECT bundle_gz FROM artifacts WHERE hash = $1",
+        hash,
+    )
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|e| {
+        warn!(error = %e, hash = %hash, "DB artifact fetch failed");
         StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    })?
+    .ok_or(StatusCode::NOT_FOUND)?;
 
-    let response = Response::builder()
+    let data = row.bundle_gz;
+
+    Ok(Response::builder()
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, "application/gzip")
         .header(
@@ -1866,7 +1873,5 @@ async fn download_artifact(
             format!("attachment; filename=\"bundle-{}.tar.gz\"", &hash[..8.min(hash.len())]),
         )
         .body(Body::from(data))
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(response)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?)
 }

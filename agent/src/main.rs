@@ -116,10 +116,10 @@ async fn run_agent(
     use coordinator_client::CoordinatorClient;
 
     // Connect to coordinator
-    let coordinator = CoordinatorClient::connect(&cfg.coordinator_endpoints).await?;
+    let mut coordinator = CoordinatorClient::connect(&cfg.coordinator_endpoints).await?;
     info!("Connected to coordinator");
 
-    // Register provider
+    // Register provider (sets coordinator.provider_id)
     coordinator.register(&keypair, &chip, &cfg, &runtimes).await?;
     info!("Provider registered with coordinator");
 
@@ -140,6 +140,6 @@ async fn run_agent(
 fn default_config_path() -> PathBuf {
     dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("~/.config"))
-        .join("neuralmesh")
+        .join("hatch")
         .join("agent.toml")
 }

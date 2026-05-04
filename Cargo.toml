@@ -31,7 +31,7 @@ toml = "0.8"
 bincode = "2"
 
 # gRPC / protobuf
-tonic = { version = "0.12", features = ["tls"] }
+tonic = { version = "0.12", features = ["tls", "tls-native-roots"] }
 prost = "0.13"
 prost-types = "0.13"
 
