@@ -40,7 +40,7 @@ async fn setup(ctx: &ClientContext) -> Result<()> {
 async fn info(ctx: &ClientContext) -> Result<()> {
     let cfg_dir = dirs::config_dir()
         .unwrap_or_default()
-        .join("neuralmesh");
+        .join("hatch");
 
     let key_path = cfg_dir.join("identity.key");
     let cli_cfg_path = cfg_dir.join("cli.toml");

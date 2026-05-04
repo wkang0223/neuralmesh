@@ -50,6 +50,6 @@ impl Default for CliConfig {
 fn config_path() -> std::path::PathBuf {
     dirs::config_dir()
         .unwrap_or_else(|| std::path::PathBuf::from("~/.config"))
-        .join("neuralmesh")
+        .join("hatch")
         .join("cli.toml")
 }

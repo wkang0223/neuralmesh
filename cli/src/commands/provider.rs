@@ -245,7 +245,7 @@ async fn configure(
 ) -> Result<()> {
     let cfg_path = dirs::config_dir()
         .unwrap_or_default()
-        .join("neuralmesh/agent.toml");
+        .join("hatch/agent.toml");
 
     let content = if cfg_path.exists() {
         std::fs::read_to_string(&cfg_path)?
@@ -302,7 +302,7 @@ pub async fn ensure_account(ctx: &ClientContext) -> Result<String> {
 
     let cfg_dir = dirs::config_dir()
         .unwrap_or_default()
-        .join("neuralmesh");
+        .join("hatch");
     std::fs::create_dir_all(&cfg_dir).context("create config dir")?;
 
     // 1. Load or generate keypair
