@@ -81,9 +81,12 @@ pub async fn deposit(
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    // Record transaction
+    // Record transaction (with balance_after snapshot)
     sqlx::query!(
-        "INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, reference, description) VALUES ($1, $2, 'deposit', $3, $4, 'Manual deposit')",
+        r#"INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, balance_after, reference, description)
+           VALUES ($1, $2, 'deposit', $3,
+               (SELECT available_nmc FROM credit_accounts WHERE account_id = $2),
+               $4, 'Manual deposit')"#,
         tx_id, account_id, body.amount_nmc, body.reference,
     )
     .execute(&state.db)
@@ -144,7 +147,10 @@ pub async fn withdraw(
     }
 
     sqlx::query!(
-        "INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, reference, description) VALUES ($1, $2, 'withdraw', $3, $4, 'Withdrawal request')",
+        r#"INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, balance_after, reference, description)
+           VALUES ($1, $2, 'withdraw', $3,
+               (SELECT available_nmc FROM credit_accounts WHERE account_id = $2),
+               $4, 'Withdrawal request')"#,
         tx_id, account_id, -body.amount_nmc, body.dest_address,
     )
     .execute(&state.db)
@@ -301,7 +307,7 @@ pub async fn list_transactions(
     Path(account_id): Path<String>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let rows = sqlx::query!(
-        "SELECT tx_id, tx_type, amount_nmc, reference, description, created_at FROM transactions WHERE account_id = $1 ORDER BY created_at DESC LIMIT 100",
+        "SELECT tx_id, tx_type, amount_nmc, balance_after, reference, description, created_at FROM transactions WHERE account_id = $1 ORDER BY created_at DESC LIMIT 100",
         account_id,
     )
     .fetch_all(&state.db)
@@ -309,12 +315,13 @@ pub async fn list_transactions(
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let txs: Vec<_> = rows.into_iter().map(|r| serde_json::json!({
-        "tx_id":       r.tx_id,
-        "tx_type":     r.tx_type,
-        "amount_nmc":  r.amount_nmc,
-        "reference":   r.reference,
-        "description": r.description,
-        "created_at":  r.created_at.map(|t| t.to_string()),
+        "tx_id":        r.tx_id,
+        "tx_type":      r.tx_type,
+        "amount_nmc":   r.amount_nmc,
+        "balance_after": r.balance_after.unwrap_or(0.0),
+        "reference":    r.reference,
+        "description":  r.description,
+        "created_at":   r.created_at.map(|t| t.to_string()),
     })).collect();
 
     Ok(Json(serde_json::json!({ "transactions": txs })))

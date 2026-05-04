@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO escrows (escrow_id, job_id, consumer_id, provider_id, locked_nmc) VALUES ($1, $2, $3, $4, $5)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Float8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b3088a42b7ba443d17e7f7566afa70c3df7c234e6998bf83dc40910767c68108"
+}

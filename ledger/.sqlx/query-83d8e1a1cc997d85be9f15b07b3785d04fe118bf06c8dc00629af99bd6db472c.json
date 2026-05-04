@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT available_nmc, escrowed_nmc, total_earned_nmc, total_spent_nmc FROM credit_accounts WHERE account_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "available_nmc",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 1,
+        "name": "escrowed_nmc",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 2,
+        "name": "total_earned_nmc",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "total_spent_nmc",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "83d8e1a1cc997d85be9f15b07b3785d04fe118bf06c8dc00629af99bd6db472c"
+}

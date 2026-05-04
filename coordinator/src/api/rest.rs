@@ -403,12 +403,14 @@ async fn submit_job(
     let tx_id = Uuid::new_v4().to_string();
     sqlx::query!(
         r#"
-        INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, reference, description)
-        VALUES ($1, $2, 'escrow_lock', $3, $4, 'Job escrow locked')
+        INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, balance_after, reference, description)
+        VALUES ($1, $2, 'escrow_lock', $3,
+            (SELECT available_nmc FROM credit_accounts WHERE account_id = $2),
+            $4, 'Job escrow locked')
         "#,
         tx_id,
         body.account_id,
-        max_cost,
+        -max_cost,   // negative = money moved out of available balance
         job_id,
     )
     .execute(&state.db)

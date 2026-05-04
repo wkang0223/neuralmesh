@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, balance_after, reference, description)\n        VALUES ($1, $2, 'escrow_lock', $3,\n            (SELECT available_nmc FROM credit_accounts WHERE account_id = $2),\n            $4, 'Job escrow locked')\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7f514583ab71431ffeac48cfb1e7eca864a624e7357a6c31f7336d3b418049c2"
+}

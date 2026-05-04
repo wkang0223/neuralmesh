@@ -20,7 +20,7 @@ set -euo pipefail
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-NM_VERSION="${NM_VERSION:-v0.2.8}"
+NM_VERSION="${NM_VERSION:-v0.2.9}"
 NM_INSTALL_DIR="/opt/homebrew/bin"
 NM_LOG_DIR="/var/log/hatch"
 # macOS config dir: ~/Library/Application Support/hatch

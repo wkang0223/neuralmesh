@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT tx_id, tx_type, amount_nmc, balance_after, reference, description, created_at FROM transactions WHERE account_id = $1 ORDER BY created_at DESC LIMIT 100",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tx_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "tx_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "amount_nmc",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "balance_after",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 4,
+        "name": "reference",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "6c221848ab70dbb9cded74fdc5774521a6f637481a73a90642460ec13048e526"
+}

@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO transactions (tx_id, account_id, tx_type, amount_nmc, balance_after, reference, description)\n           VALUES ($1, $2, 'deposit', $3,\n               (SELECT available_nmc FROM credit_accounts WHERE account_id = $2),\n               $4, 'Manual deposit')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a9cc14603861fa6a0fa6f93aeeb13e682a5e6ced08e857cce3985ae8b90f362f"
+}
